@@ -40,6 +40,9 @@ import {
 } from "lucide-react";
 import Navbar from "../components/Navbar";
 
+const API_BASE_URL =
+  import.meta.env.VITE_API_URL || "http://localhost:5000/api";
+
 const exams = [
   {
     id: "upsc",
@@ -801,6 +804,7 @@ function MockTests({ onLogout, onMockTests, onStartTest, onHome }) {
   const [customExamSubtitle, setCustomExamSubtitle] = useState("");
   const [customExams, setCustomExams] = useState([]);
   const [customSubjects, setCustomSubjects] = useState([]);
+  const [generating, setGenerating] = useState(false);
 
   const allExams = useMemo(
     () => [...baseExams, ...customExams, exams.find((item) => item.id === "other")],
@@ -961,8 +965,10 @@ function MockTests({ onLogout, onMockTests, onStartTest, onHome }) {
     setTopicOpen(false);
   };
 
-  const handleGenerate = () => {
-    onStartTest?.({
+  const handleGenerate = async () => {
+    if (generating) return;
+
+    const config = {
       exam: selectedExam.title,
       examSubtitle: selectedExam.subtitle,
       subjects: selectedSubjectObjects.map((item) => item.title),
@@ -970,7 +976,42 @@ function MockTests({ onLogout, onMockTests, onStartTest, onHome }) {
       questionCount: Number(finalQuestionCount) || 50,
       difficulty: selectedDifficulty?.label || "Medium",
       language: selectedLanguage?.label || "English",
-    });
+    };
+
+    setGenerating(true);
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/mock/generate`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(config),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok || !data.success) {
+        window.alert(data.message || "Unable to generate mock test.");
+        return;
+      }
+
+      if (!Array.isArray(data.questions) || data.questions.length === 0) {
+        window.alert("AI did not generate any questions.");
+        return;
+      }
+
+      onStartTest?.({
+        ...config,
+        questionCount: data.questions.length,
+        questions: data.questions,
+      });
+    } catch (error) {
+      console.error("Mock Test Generation Error:", error);
+      window.alert("Unable to generate mock test. Please try again.");
+    } finally {
+      setGenerating(false);
+    }
   };
 
   return (

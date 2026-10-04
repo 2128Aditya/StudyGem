@@ -6,14 +6,27 @@ import ForgotPassword from "./pages/ForgotPassword";
 import Home from "./pages/Home";
 import MockTests from "./pages/MockTests";
 import MockTestInterface from "./pages/MockTestInterface";
+import MockTestResult from "./pages/MockTestResult";
 
 function App() {
+  // =========================
+  // PAGE STATE
+  // =========================
   const [page, setPage] = useState(() => {
     const token = localStorage.getItem("studyGemToken");
+
     return token ? "home" : "login";
   });
 
+  // =========================
+  // MOCK TEST CONFIG
+  // =========================
   const [testConfig, setTestConfig] = useState(null);
+
+  // =========================
+  // MOCK TEST RESULT
+  // =========================
+  const [testResult, setTestResult] = useState(null);
 
   // =========================
   // LOGOUT
@@ -23,6 +36,8 @@ function App() {
     localStorage.removeItem("studyGemUser");
 
     setTestConfig(null);
+    setTestResult(null);
+
     setPage("login");
   };
 
@@ -45,12 +60,47 @@ function App() {
   // =========================
   const startMockTest = (config) => {
     setTestConfig(config);
+    setTestResult(null);
+
     setPage("mock-test");
+  };
+
+  // =========================
+  // FINISH MOCK TEST
+  // =========================
+  const finishMockTest = (resultData) => {
+    setTestResult(resultData);
+
+    setPage("mock-result");
+  };
+
+  // =========================
+  // RETAKE MOCK TEST
+  // =========================
+  const retakeMockTest = () => {
+    if (!testResult?.testConfig) {
+      return;
+    }
+
+    setTestConfig(testResult.testConfig);
+    setTestResult(null);
+
+    setPage("mock-test");
+  };
+
+  // =========================
+  // BACK TO MOCK TEST CREATOR
+  // =========================
+  const backToMockTests = () => {
+    setTestResult(null);
+    setPage("mock-create");
   };
 
   return (
     <div className="min-h-screen">
-      {/* ================= LOGIN ================= */}
+      {/* =====================================================
+          LOGIN
+      ===================================================== */}
       {page === "login" && (
         <Login
           onSignup={() => setPage("signup")}
@@ -59,17 +109,27 @@ function App() {
         />
       )}
 
-      {/* ================= SIGNUP ================= */}
+      {/* =====================================================
+          SIGNUP
+      ===================================================== */}
       {page === "signup" && (
-        <Signup onLogin={() => setPage("login")} />
+        <Signup
+          onLogin={() => setPage("login")}
+        />
       )}
 
-      {/* ================= FORGOT PASSWORD ================= */}
+      {/* =====================================================
+          FORGOT PASSWORD
+      ===================================================== */}
       {page === "forgot" && (
-        <ForgotPassword onLogin={() => setPage("login")} />
+        <ForgotPassword
+          onLogin={() => setPage("login")}
+        />
       )}
 
-      {/* ================= HOME ================= */}
+      {/* =====================================================
+          HOME
+      ===================================================== */}
       {page === "home" && (
         <Home
           onLogout={handleLogout}
@@ -77,7 +137,9 @@ function App() {
         />
       )}
 
-      {/* ================= MOCK TEST CREATOR ================= */}
+      {/* =====================================================
+          MOCK TEST CREATOR
+      ===================================================== */}
       {page === "mock-create" && (
         <MockTests
           onLogout={handleLogout}
@@ -87,7 +149,9 @@ function App() {
         />
       )}
 
-      {/* ================= ACTUAL MOCK TEST ================= */}
+      {/* =====================================================
+          ACTUAL MOCK TEST
+      ===================================================== */}
       {page === "mock-test" && (
         <MockTestInterface
           testConfig={testConfig}
@@ -95,6 +159,20 @@ function App() {
           onMockTests={openMockTests}
           onHome={openHome}
           onBack={openMockTests}
+          onFinishTest={finishMockTest}
+        />
+      )}
+
+      {/* =====================================================
+          MOCK TEST RESULT
+      ===================================================== */}
+      {page === "mock-result" && (
+        <MockTestResult
+          testConfig={testResult?.testConfig}
+          questions={testResult?.questions || []}
+          answers={testResult?.answers || {}}
+          onBack={backToMockTests}
+          onRetake={retakeMockTest}
         />
       )}
     </div>
