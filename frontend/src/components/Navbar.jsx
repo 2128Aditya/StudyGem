@@ -1,4 +1,5 @@
 import { useState } from "react";
+
 import {
   Home,
   BookOpen,
@@ -16,43 +17,34 @@ import {
 
 import logo from "../assets/logo.png";
 
-function Navbar({ onLogout }) {
+function Navbar({ onLogout, onMockTests, activePage = "home" }) {
   const [mobileOpen, setMobileOpen] = useState(false);
 
   const navItems = [
-    {
-      label: "Home",
-      icon: Home,
-    },
-    {
-      label: "Notes",
-      icon: BookOpen,
-    },
-    {
-      label: "PYQs",
-      icon: FileText,
-    },
-    {
-      label: "Mock Tests",
-      icon: ClipboardCheck,
-    },
-    {
-      label: "AI Assistant",
-      icon: Bot,
-    },
-    {
-      label: "Roadmaps",
-      icon: Map,
-    },
-    {
-      label: "Leaderboard",
-      icon: Trophy,
-    },
-    {
-      label: "Target",
-      icon: Target,
-    },
+    { label: "Home", icon: Home, page: "home" },
+    { label: "Notes", icon: BookOpen, page: "notes" },
+    { label: "PYQs", icon: FileText, page: "pyqs" },
+    { label: "Mock Tests", icon: ClipboardCheck, page: "mock" },
+    { label: "AI Assistant", icon: Bot, page: "ai" },
+    { label: "Roadmaps", icon: Map, page: "roadmaps" },
+    { label: "Leaderboard", icon: Trophy, page: "leaderboard" },
+    { label: "Target", icon: Target, page: "target" },
   ];
+
+  const handleNavigation = (page) => {
+    setMobileOpen(false);
+
+    // Mock Tests is connected directly to the MockTests page.
+    if (page === "mock") {
+      if (onMockTests) {
+        onMockTests();
+      }
+      return;
+    }
+
+    // Keep other navigation items as UI buttons for now.
+    // They can be connected later without changing the navbar design.
+  };
 
   const handleLogout = () => {
     setMobileOpen(false);
@@ -64,49 +56,23 @@ function Navbar({ onLogout }) {
 
   return (
     <>
-      {/* ================= NAVBAR ================= */}
       <header className="fixed top-0 left-0 z-50 w-full px-3 pt-3 sm:px-5 lg:px-7">
-        <div
-          className="
-            mx-auto
-            w-full
-            rounded-2xl
-            border
-            border-white/80
-            bg-white/90
-            backdrop-blur-xl
-            shadow-[0_8px_30px_rgba(80,45,160,0.10)]
-          "
-        >
+        <div className="mx-auto w-full rounded-2xl border border-white/80 bg-white/90 backdrop-blur-xl shadow-[0_8px_30px_rgba(80,45,160,0.10)]">
           <div className="flex h-[64px] items-center justify-between px-4 sm:px-5 lg:h-[70px] lg:px-6">
-            {/* ================= LOGO ================= */}
+
+            {/* LOGO */}
             <button
               type="button"
-              onClick={() => setMobileOpen(false)}
-              className="
-                flex
-                shrink-0
-                items-center
-                gap-2
-                border-0
-                bg-transparent
-                outline-none
-              "
+              onClick={() => handleNavigation("home")}
+              className="flex shrink-0 items-center gap-2 border-0 bg-transparent outline-none"
             >
               <img
                 src={logo}
                 alt="StudyGem"
-                className="
-                  h-9
-                  w-9
-                  rounded-xl
-                  object-cover
-                  sm:h-10
-                  sm:w-10
-                "
+                className="h-9 w-9 rounded-xl object-cover sm:h-10 sm:w-10"
               />
 
-              <div className="hidden sm:block text-left">
+              <div className="hidden text-left sm:block">
                 <div className="text-[18px] font-extrabold leading-none text-[#171d38] lg:text-[20px]">
                   Study<span className="text-[#6d28f0]">Gem</span>
                 </div>
@@ -117,27 +83,20 @@ function Navbar({ onLogout }) {
               </div>
             </button>
 
-            {/* ================= DESKTOP NAV ================= */}
+            {/* DESKTOP NAV */}
             <nav className="hidden items-center gap-1 xl:flex">
               {navItems.map((item) => {
                 const Icon = item.icon;
-                const active = item.label === "Home";
+                const active = activePage === item.page;
 
                 return (
                   <button
                     key={item.label}
                     type="button"
+                    onClick={() => handleNavigation(item.page)}
                     className={`
-                      flex
-                      items-center
-                      gap-1.5
-                      rounded-xl
-                      px-3
-                      py-2
-                      text-[12px]
-                      font-semibold
-                      transition-all
-                      duration-200
+                      flex items-center gap-1.5 rounded-xl px-3 py-2
+                      text-[12px] font-semibold transition-all duration-200
                       ${
                         active
                           ? "bg-[#f0e9ff] text-[#6425ed]"
@@ -146,88 +105,39 @@ function Navbar({ onLogout }) {
                     `}
                   >
                     <Icon size={16} strokeWidth={2} />
-
                     <span>{item.label}</span>
                   </button>
                 );
               })}
             </nav>
 
-            {/* ================= RIGHT SIDE ================= */}
+            {/* RIGHT SIDE */}
             <div className="hidden items-center gap-2 lg:flex">
-              {/* PROFILE */}
               <button
                 type="button"
-                className="
-                  flex
-                  items-center
-                  gap-2
-                  rounded-xl
-                  border
-                  border-[#eee8ff]
-                  bg-[#faf8ff]
-                  px-3
-                  py-2
-                  text-[#4d556e]
-                  transition
-                  hover:bg-[#f3edff]
-                "
+                className="flex items-center gap-2 rounded-xl border border-[#eee8ff] bg-[#faf8ff] px-3 py-2 text-[#4d556e] transition hover:bg-[#f3edff]"
               >
-                <UserCircle
-                  size={21}
-                  className="text-[#6d28f0]"
-                />
-
+                <UserCircle size={21} className="text-[#6d28f0]" />
                 <span className="hidden text-[12px] font-semibold xl:block">
                   Profile
                 </span>
               </button>
 
-              {/* LOGOUT */}
               <button
                 type="button"
                 onClick={handleLogout}
-                className="
-                  flex
-                  items-center
-                  gap-2
-                  rounded-xl
-                  bg-gradient-to-r
-                  from-[#7630ff]
-                  to-[#5420ee]
-                  px-3
-                  py-2
-                  text-[12px]
-                  font-semibold
-                  text-white
-                  shadow-md
-                  shadow-purple-200
-                  transition
-                  hover:opacity-90
-                "
+                className="flex items-center gap-2 rounded-xl bg-gradient-to-r from-[#7630ff] to-[#5420ee] px-3 py-2 text-[12px] font-semibold text-white shadow-md shadow-purple-200 transition hover:opacity-90"
               >
                 <LogOut size={17} />
-
-                <span className="hidden xl:block">
-                  Logout
-                </span>
+                <span className="hidden xl:block">Logout</span>
               </button>
             </div>
 
-            {/* ================= TABLET RIGHT ================= */}
+            {/* TABLET RIGHT */}
             <div className="hidden items-center gap-2 sm:flex lg:hidden">
               <button
                 type="button"
-                className="
-                  flex
-                  h-10
-                  w-10
-                  items-center
-                  justify-center
-                  rounded-xl
-                  bg-[#f3edff]
-                  text-[#6425ed]
-                "
+                className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#f3edff] text-[#6425ed]"
               >
                 <UserCircle size={21} />
               </button>
@@ -235,81 +145,38 @@ function Navbar({ onLogout }) {
               <button
                 type="button"
                 onClick={handleLogout}
-                className="
-                  flex
-                  h-10
-                  w-10
-                  items-center
-                  justify-center
-                  rounded-xl
-                  bg-gradient-to-r
-                  from-[#7630ff]
-                  to-[#5420ee]
-                  text-white
-                  shadow-md
-                  shadow-purple-200
-                "
+                className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-r from-[#7630ff] to-[#5420ee] text-white shadow-md shadow-purple-200"
               >
                 <LogOut size={18} />
               </button>
             </div>
 
-            {/* ================= MOBILE MENU BUTTON ================= */}
+            {/* MOBILE MENU BUTTON */}
             <button
               type="button"
               onClick={() => setMobileOpen((prev) => !prev)}
-              className="
-                flex
-                h-10
-                w-10
-                items-center
-                justify-center
-                rounded-xl
-                bg-[#f3edff]
-                text-[#6425ed]
-                sm:hidden
-              "
+              className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#f3edff] text-[#6425ed] sm:hidden"
             >
-              {mobileOpen ? (
-                <X size={22} />
-              ) : (
-                <Menu size={22} />
-              )}
+              {mobileOpen ? <X size={22} /> : <Menu size={22} />}
             </button>
           </div>
 
-          {/* ================= MOBILE MENU ================= */}
+          {/* MOBILE MENU */}
           {mobileOpen && (
-            <div
-              className="
-                border-t
-                border-[#eee8ff]
-                px-4
-                pb-4
-                pt-3
-                sm:hidden
-              "
-            >
+            <div className="border-t border-[#eee8ff] px-4 pb-4 pt-3 sm:hidden">
               <div className="grid grid-cols-2 gap-2">
                 {navItems.map((item) => {
                   const Icon = item.icon;
-                  const active = item.label === "Home";
+                  const active = activePage === item.page;
 
                   return (
                     <button
                       key={item.label}
                       type="button"
-                      onClick={() => setMobileOpen(false)}
+                      onClick={() => handleNavigation(item.page)}
                       className={`
-                        flex
-                        items-center
-                        gap-2
-                        rounded-xl
-                        px-3
-                        py-3
-                        text-left
-                        text-[12px]
-                        font-semibold
+                        flex items-center gap-2 rounded-xl px-3 py-3
+                        text-left text-[12px] font-semibold
                         ${
                           active
                             ? "bg-[#f0e9ff] text-[#6425ed]"
@@ -318,58 +185,28 @@ function Navbar({ onLogout }) {
                       `}
                     >
                       <Icon size={17} />
-
                       <span>{item.label}</span>
                     </button>
                   );
                 })}
               </div>
 
-              {/* MOBILE PROFILE + LOGOUT */}
               <div className="mt-3 grid grid-cols-2 gap-2">
                 <button
                   type="button"
                   onClick={() => setMobileOpen(false)}
-                  className="
-                    flex
-                    items-center
-                    justify-center
-                    gap-2
-                    rounded-xl
-                    border
-                    border-[#eee8ff]
-                    bg-white
-                    py-3
-                    text-[12px]
-                    font-semibold
-                    text-[#59627c]
-                  "
+                  className="flex items-center justify-center gap-2 rounded-xl border border-[#eee8ff] bg-white py-3 text-[12px] font-semibold text-[#59627c]"
                 >
                   <UserCircle size={18} />
-
                   Profile
                 </button>
 
                 <button
                   type="button"
                   onClick={handleLogout}
-                  className="
-                    flex
-                    items-center
-                    justify-center
-                    gap-2
-                    rounded-xl
-                    bg-gradient-to-r
-                    from-[#7630ff]
-                    to-[#5420ee]
-                    py-3
-                    text-[12px]
-                    font-semibold
-                    text-white
-                  "
+                  className="flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#7630ff] to-[#5420ee] py-3 text-[12px] font-semibold text-white"
                 >
                   <LogOut size={18} />
-
                   Logout
                 </button>
               </div>

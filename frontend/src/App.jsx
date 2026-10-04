@@ -4,14 +4,16 @@ import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import ForgotPassword from "./pages/ForgotPassword";
 import Home from "./pages/Home";
+import MockTests from "./pages/MockTests";
+import MockTestInterface from "./pages/MockTestInterface";
 
 function App() {
-  // Check login status when app starts
   const [page, setPage] = useState(() => {
     const token = localStorage.getItem("studyGemToken");
-
     return token ? "home" : "login";
   });
+
+  const [testConfig, setTestConfig] = useState(null);
 
   // =========================
   // LOGOUT
@@ -20,69 +22,80 @@ function App() {
     localStorage.removeItem("studyGemToken");
     localStorage.removeItem("studyGemUser");
 
+    setTestConfig(null);
     setPage("login");
   };
 
   // =========================
-  // LOGIN SUCCESS
+  // HOME
   // =========================
-  const handleLogin = () => {
+  const openHome = () => {
     setPage("home");
   };
 
   // =========================
-  // SIGNUP PAGE
+  // OPEN MOCK TEST CREATOR
   // =========================
-  const handleSignup = () => {
-    setPage("signup");
+  const openMockTests = () => {
+    setPage("mock-create");
   };
 
   // =========================
-  // FORGOT PASSWORD PAGE
+  // START MOCK TEST
   // =========================
-  const handleForgotPassword = () => {
-    setPage("forgot");
-  };
-
-  // =========================
-  // BACK TO LOGIN
-  // =========================
-  const handleBackToLogin = () => {
-    setPage("login");
+  const startMockTest = (config) => {
+    setTestConfig(config);
+    setPage("mock-test");
   };
 
   return (
-    <div className="min-h-screen w-full">
-      {/* =========================
-          LOGIN
-      ========================= */}
+    <div className="min-h-screen">
+      {/* ================= LOGIN ================= */}
       {page === "login" && (
         <Login
-          onSignup={handleSignup}
-          onForgotPassword={handleForgotPassword}
-          onLogin={handleLogin}
+          onSignup={() => setPage("signup")}
+          onForgotPassword={() => setPage("forgot")}
+          onLogin={() => setPage("home")}
         />
       )}
 
-      {/* =========================
-          SIGNUP
-      ========================= */}
+      {/* ================= SIGNUP ================= */}
       {page === "signup" && (
-        <Signup onLogin={handleBackToLogin} />
+        <Signup onLogin={() => setPage("login")} />
       )}
 
-      {/* =========================
-          FORGOT PASSWORD
-      ========================= */}
+      {/* ================= FORGOT PASSWORD ================= */}
       {page === "forgot" && (
-        <ForgotPassword onLogin={handleBackToLogin} />
+        <ForgotPassword onLogin={() => setPage("login")} />
       )}
 
-      {/* =========================
-          HOME
-      ========================= */}
+      {/* ================= HOME ================= */}
       {page === "home" && (
-        <Home onLogout={handleLogout} />
+        <Home
+          onLogout={handleLogout}
+          onMockTests={openMockTests}
+        />
+      )}
+
+      {/* ================= MOCK TEST CREATOR ================= */}
+      {page === "mock-create" && (
+        <MockTests
+          onLogout={handleLogout}
+          onMockTests={openMockTests}
+          onHome={openHome}
+          onStartTest={startMockTest}
+        />
+      )}
+
+      {/* ================= ACTUAL MOCK TEST ================= */}
+      {page === "mock-test" && (
+        <MockTestInterface
+          testConfig={testConfig}
+          onLogout={handleLogout}
+          onMockTests={openMockTests}
+          onHome={openHome}
+          onBack={openMockTests}
+        />
       )}
     </div>
   );
