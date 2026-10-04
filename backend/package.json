@@ -1,3 +1,4 @@
+
 {
   "name": "backend",
   "version": "1.0.0",
@@ -18,5 +19,15 @@
     "express": "^5.2.1",
     "jsonwebtoken": "^9.0.3",
     "mongoose": "^9.10.4"
+  }
+}
+{
+  "name": "study-gem-backend",
+  "version": "1.0.0",
+  "description": "StudyGem Backend",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "nodemon server.js"
   }
 }
