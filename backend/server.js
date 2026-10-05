@@ -13,6 +13,8 @@ const mockAttemptRoutes = require("./routes/mockAttemptRoutes");
 const profileRoutes = require("./routes/profileRoutes");
 const aiRoutes = require("./routes/aiRoutes");
 const roadmapRoutes = require("./routes/roadmapRoutes");
+const studyRoutes = require("./routes/studyRoutes");
+const pyqRoutes = require("./routes/pyqRoutes");
 connectDB();
 
 const app = express();
@@ -29,6 +31,8 @@ app.use(
 app.use("/api/ai", aiRoutes);
 app.use("/api/profile", profileRoutes);
 app.use("/api/roadmap", roadmapRoutes);
+app.use("/api/study", studyRoutes);
+app.use("/api/pyq", pyqRoutes);
 app.get("/", (req, res) => {
   res.json({
     success: true,

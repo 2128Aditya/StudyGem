@@ -58,10 +58,19 @@ const Login = ({ onSignup, onForgotPassword, onLogin }) => {
         return;
       }
 
+      if (!data.user || data.user.role !== role) {
+        setError(
+          role === "admin"
+            ? "This account is not registered as an admin."
+            : "This account is not registered as a student."
+        );
+        return;
+      }
+
       localStorage.setItem("studyGemToken", data.token);
       localStorage.setItem("studyGemUser", JSON.stringify(data.user));
 
-      onLogin();
+      onLogin(data.user);
     } catch (err) {
       console.error("Login Error:", err);
 
@@ -75,7 +84,6 @@ const Login = ({ onSignup, onForgotPassword, onLogin }) => {
 
   return (
     <div className="relative min-h-screen w-full overflow-hidden bg-[#eaf5ff]">
-
       {/* =====================================================
           DESKTOP BACKGROUND
       ====================================================== */}
@@ -127,7 +135,6 @@ const Login = ({ onSignup, onForgotPassword, onLogin }) => {
         "
       >
         <div className="w-full px-[7%] py-7 lg:py-8 xl:py-9">
-
           {/* LOGO */}
           <div className="mb-4 flex items-center">
             <img
@@ -159,7 +166,6 @@ const Login = ({ onSignup, onForgotPassword, onLogin }) => {
 
           {/* STUDENT / ADMIN */}
           <div className="mt-5 p-1 bg-[#f0eff9] rounded-xl grid grid-cols-2">
-
             <button
               type="button"
               onClick={() => {
@@ -213,15 +219,10 @@ const Login = ({ onSignup, onForgotPassword, onLogin }) => {
               <ShieldCheck size={17} />
               Admin Login
             </button>
-
           </div>
 
           {/* FORM */}
-          <form
-            onSubmit={handleLogin}
-            className="mt-6 space-y-4"
-          >
-
+          <form onSubmit={handleLogin} className="mt-6 space-y-4">
             {/* EMAIL */}
             <div>
               <label className="mb-2 block text-sm font-semibold text-[#20294a]">
@@ -332,7 +333,6 @@ const Login = ({ onSignup, onForgotPassword, onLogin }) => {
 
             {/* REMEMBER + FORGOT */}
             <div className="flex items-center justify-between">
-
               <label className="flex items-center gap-2 text-sm text-[#20294a]">
                 <input
                   type="checkbox"
@@ -360,7 +360,6 @@ const Login = ({ onSignup, onForgotPassword, onLogin }) => {
               >
                 Forgot Password?
               </button>
-
             </div>
 
             {/* ERROR */}
@@ -401,7 +400,6 @@ const Login = ({ onSignup, onForgotPassword, onLogin }) => {
 
               <ArrowRight size={19} />
             </button>
-
           </form>
 
           {/* SIGN UP */}
@@ -423,7 +421,6 @@ const Login = ({ onSignup, onForgotPassword, onLogin }) => {
               Sign Up
             </button>
           </div>
-
         </div>
       </div>
 
@@ -448,7 +445,6 @@ const Login = ({ onSignup, onForgotPassword, onLogin }) => {
         "
       >
         <div className="w-full px-5 py-5">
-
           {/* LOGO */}
           <div className="mb-3 flex justify-center">
             <img
@@ -478,7 +474,6 @@ const Login = ({ onSignup, onForgotPassword, onLogin }) => {
 
           {/* STUDENT / ADMIN */}
           <div className="mt-4 p-1 bg-[#f0eff9] rounded-xl grid grid-cols-2">
-
             <button
               type="button"
               onClick={() => {
@@ -532,15 +527,10 @@ const Login = ({ onSignup, onForgotPassword, onLogin }) => {
               <ShieldCheck size={13} />
               Admin Login
             </button>
-
           </div>
 
           {/* FORM */}
-          <form
-            onSubmit={handleLogin}
-            className="mt-4 space-y-3"
-          >
-
+          <form onSubmit={handleLogin} className="mt-4 space-y-3">
             {/* EMAIL */}
             <div>
               <label className="mb-1.5 block text-[10px] font-semibold text-[#20294a]">
@@ -651,7 +641,6 @@ const Login = ({ onSignup, onForgotPassword, onLogin }) => {
 
             {/* REMEMBER + FORGOT */}
             <div className="flex items-center justify-between">
-
               <label className="flex items-center gap-1.5 text-[10px] text-[#20294a]">
                 <input
                   type="checkbox"
@@ -678,7 +667,6 @@ const Login = ({ onSignup, onForgotPassword, onLogin }) => {
               >
                 Forgot Password?
               </button>
-
             </div>
 
             {/* ERROR */}
@@ -715,7 +703,6 @@ const Login = ({ onSignup, onForgotPassword, onLogin }) => {
 
               <ArrowRight size={15} />
             </button>
-
           </form>
 
           {/* SIGN UP — BOTTOM */}
@@ -736,10 +723,8 @@ const Login = ({ onSignup, onForgotPassword, onLogin }) => {
               Sign Up
             </button>
           </div>
-
         </div>
       </div>
-
     </div>
   );
 };

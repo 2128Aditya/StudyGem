@@ -88,7 +88,6 @@ const exams = [
   },
 ];
 
-
 const baseExams = exams.filter((item) => item.id !== "other");
 
 const otherExamCatalog = [
@@ -402,11 +401,11 @@ function NumberedHeading({ number, title, subtitle, action }) {
   return (
     <div className="mb-4 flex items-start justify-between gap-4">
       <div className="flex min-w-0 items-start gap-3">
-        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#eee7ff] text-lg font-extrabold text-[#6425ed]">
+        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#eee7ff] text-lg font-normal text-[#6425ed]">
           {number}
         </span>
         <div className="min-w-0">
-          <h2 className="text-[17px] font-extrabold tracking-tight text-[#10183d] sm:text-[18px]">
+          <h2 className="text-[17px] font-normal tracking-tight text-[#10183d] sm:text-[18px]">
             {title}
           </h2>
           <p className="mt-0.5 text-[11px] leading-5 text-[#707999] sm:text-[12px]">
@@ -418,7 +417,6 @@ function NumberedHeading({ number, title, subtitle, action }) {
     </div>
   );
 }
-
 
 function ModalShell({ open, onClose, title, subtitle, children, maxWidth = "max-w-4xl" }) {
   if (!open) return null;
@@ -435,8 +433,8 @@ function ModalShell({ open, onClose, title, subtitle, children, maxWidth = "max-
       <div className={`relative z-10 flex max-h-[92vh] w-full ${maxWidth} flex-col overflow-hidden rounded-[28px] border border-white/90 bg-white shadow-[0_30px_100px_rgba(31,20,77,0.28)]`}>
         <div className="flex shrink-0 items-start justify-between border-b border-[#eeeaff] bg-white px-5 py-4 sm:px-7 sm:py-5">
           <div className="min-w-0 pr-4">
-            <h2 className="text-xl font-black tracking-tight text-[#171b3e] sm:text-2xl">{title}</h2>
-            {subtitle && <p className="mt-1 text-xs font-medium leading-5 text-[#727a99] sm:text-sm">{subtitle}</p>}
+            <h2 className="text-xl font-normal tracking-tight text-[#171b3e] sm:text-2xl">{title}</h2>
+            {subtitle && <p className="mt-1 text-xs font-normal leading-5 text-[#727a99] sm:text-sm">{subtitle}</p>}
           </div>
           <button
             type="button"
@@ -460,7 +458,7 @@ function ModalSearch({ value, onChange, placeholder }) {
         value={value}
         onChange={(event) => onChange(event.target.value)}
         placeholder={placeholder}
-        className="h-12 w-full rounded-2xl border border-[#e1ddf2] bg-[#faf9ff] pl-11 pr-4 text-sm font-semibold text-[#252b48] outline-none transition placeholder:text-[#9aa0b8] focus:border-[#7651f1] focus:bg-white"
+        className="h-12 w-full rounded-2xl border border-[#e1ddf2] bg-[#faf9ff] pl-11 pr-4 text-sm font-normal text-[#252b48] outline-none transition placeholder:text-[#9aa0b8] focus:border-[#7651f1] focus:bg-white"
       />
     </div>
   );
@@ -474,7 +472,7 @@ function CategoryPills({ items, value, onChange }) {
           type="button"
           key={item}
           onClick={() => onChange(item)}
-          className={`shrink-0 rounded-full px-3.5 py-2 text-[11px] font-bold transition ${value === item ? "bg-[#6d28f0] text-white shadow-md shadow-purple-200" : "bg-[#f4f1ff] text-[#626987] hover:bg-[#ece6ff] hover:text-[#6425ed]"}`}
+          className={`shrink-0 rounded-full px-3.5 py-2 text-[11px] font-normal transition ${value === item ? "bg-[#6d28f0] text-white shadow-md shadow-purple-200" : "bg-[#f4f1ff] text-[#626987] hover:bg-[#ece6ff] hover:text-[#6425ed]"}`}
         >
           {item}
         </button>
@@ -524,7 +522,7 @@ function OtherExamModal({ open, onClose, exams, categories, search, setSearch, c
           <button
             type="button"
             onClick={() => document.getElementById("custom-exam-name")?.focus()}
-            className="inline-flex h-12 items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-[#7630ff] to-[#5420ee] px-5 text-xs font-extrabold text-white shadow-lg shadow-purple-200"
+            className="inline-flex h-12 items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-[#7630ff] to-[#5420ee] px-5 text-xs font-normal text-white shadow-lg shadow-purple-200"
           >
             <Plus size={17} /> Create Exam
           </button>
@@ -542,9 +540,9 @@ function OtherExamModal({ open, onClose, exams, categories, search, setSearch, c
             >
               <CatalogLogo item={item} large />
               <span className="min-w-0 flex-1">
-                <span className="block truncate text-sm font-extrabold text-[#202643]">{item.title}</span>
-                <span className="mt-0.5 block truncate text-[10px] font-medium text-[#7a829f]">{item.subtitle}</span>
-                <span className="mt-2 inline-flex rounded-full bg-[#f2edff] px-2 py-1 text-[9px] font-bold text-[#6b3ae7]">{item.category}</span>
+                <span className="block truncate text-sm font-normal text-[#202643]">{item.title}</span>
+                <span className="mt-0.5 block truncate text-[10px] font-normal text-[#7a829f]">{item.subtitle}</span>
+                <span className="mt-2 inline-flex rounded-full bg-[#f2edff] px-2 py-1 text-[9px] font-normal text-[#6b3ae7]">{item.category}</span>
               </span>
               <ChevronRight size={17} className="shrink-0 text-[#aaa2c4] transition group-hover:translate-x-0.5 group-hover:text-[#6425ed]" />
             </button>
@@ -554,7 +552,7 @@ function OtherExamModal({ open, onClose, exams, categories, search, setSearch, c
         {exams.length === 0 && (
           <div className="rounded-2xl border border-dashed border-[#dcd6ee] bg-[#faf9ff] px-5 py-10 text-center">
             <SearchCheck size={28} className="mx-auto text-[#8c7bd2]" />
-            <p className="mt-2 text-sm font-extrabold text-[#343b5b]">No exam found</p>
+            <p className="mt-2 text-sm font-normal text-[#343b5b]">No exam found</p>
             <p className="mt-1 text-xs text-[#7d849d]">Try another search or create your own exam below.</p>
           </div>
         )}
@@ -563,7 +561,7 @@ function OtherExamModal({ open, onClose, exams, categories, search, setSearch, c
           <div className="mb-4 flex items-start gap-3">
             <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#eee7ff] text-[#6425ed]"><Plus size={20} /></span>
             <div>
-              <h3 className="text-sm font-extrabold text-[#262b49]">Create your own exam</h3>
+              <h3 className="text-sm font-normal text-[#262b49]">Create your own exam</h3>
               <p className="mt-0.5 text-[11px] leading-5 text-[#737b99]">Useful when you want an exam, college test or placement assessment that is not listed above.</p>
             </div>
           </div>
@@ -573,20 +571,20 @@ function OtherExamModal({ open, onClose, exams, categories, search, setSearch, c
               value={customName}
               onChange={(event) => setCustomName(event.target.value)}
               placeholder="Exam name e.g. BBDU Semester Exam"
-              className="h-11 rounded-xl border border-[#ded9ef] bg-white px-3 text-sm font-semibold outline-none focus:border-[#7651f1]"
+              className="h-11 rounded-xl border border-[#ded9ef] bg-white px-3 text-sm font-normal outline-none focus:border-[#7651f1]"
             />
             <input
               value={customSubtitle}
               onChange={(event) => setCustomSubtitle(event.target.value)}
               placeholder="Subtitle e.g. CSE 5th Semester"
-              className="h-11 rounded-xl border border-[#ded9ef] bg-white px-3 text-sm font-semibold outline-none focus:border-[#7651f1]"
+              className="h-11 rounded-xl border border-[#ded9ef] bg-white px-3 text-sm font-normal outline-none focus:border-[#7651f1]"
             />
           </div>
           <button
             type="button"
             disabled={!customName.trim()}
             onClick={onCreate}
-            className="mt-3 flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-[#171a3e] px-4 text-xs font-extrabold text-white transition hover:bg-[#252955] disabled:cursor-not-allowed disabled:opacity-40"
+            className="mt-3 flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-[#171a3e] px-4 text-xs font-normal text-white transition hover:bg-[#252955] disabled:cursor-not-allowed disabled:opacity-40"
           >
             <CheckCircle2 size={17} /> Add Custom Exam
           </button>
@@ -623,9 +621,9 @@ function CustomSubjectModal({ open, onClose, subjects: catalog, categories, sear
                   <Icon size={20} />
                 </span>
                 <span className="min-w-0 flex-1">
-                  <span className="block truncate text-sm font-extrabold text-[#202643]">{item.title}</span>
-                  <span className="mt-0.5 block truncate text-[10px] font-medium text-[#7a829f]">{item.subtitle}</span>
-                  <span className="mt-2 inline-flex rounded-full bg-[#f2edff] px-2 py-1 text-[9px] font-bold text-[#6b3ae7]">{item.category}</span>
+                  <span className="block truncate text-sm font-normal text-[#202643]">{item.title}</span>
+                  <span className="mt-0.5 block truncate text-[10px] font-normal text-[#7a829f]">{item.subtitle}</span>
+                  <span className="mt-2 inline-flex rounded-full bg-[#f2edff] px-2 py-1 text-[9px] font-normal text-[#6b3ae7]">{item.category}</span>
                 </span>
                 <Plus size={16} className="shrink-0 text-[#aaa2c4] group-hover:text-[#6425ed]" />
               </button>
@@ -636,7 +634,7 @@ function CustomSubjectModal({ open, onClose, subjects: catalog, categories, sear
         {catalog.length === 0 && (
           <div className="rounded-2xl border border-dashed border-[#dcd6ee] bg-[#faf9ff] px-5 py-10 text-center">
             <SearchCheck size={28} className="mx-auto text-[#8c7bd2]" />
-            <p className="mt-2 text-sm font-extrabold text-[#343b5b]">No subject found</p>
+            <p className="mt-2 text-sm font-normal text-[#343b5b]">No subject found</p>
             <p className="mt-1 text-xs text-[#7d849d]">Create your own subject below.</p>
           </div>
         )}
@@ -645,7 +643,7 @@ function CustomSubjectModal({ open, onClose, subjects: catalog, categories, sear
           <div className="mb-4 flex items-start gap-3">
             <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#eee7ff] text-[#6425ed]"><Plus size={20} /></span>
             <div>
-              <h3 className="text-sm font-extrabold text-[#262b49]">Create your own subject</h3>
+              <h3 className="text-sm font-normal text-[#262b49]">Create your own subject</h3>
               <p className="mt-0.5 text-[11px] leading-5 text-[#737b99]">Add a subject for college, placement, certification or your personal preparation.</p>
             </div>
           </div>
@@ -653,20 +651,20 @@ function CustomSubjectModal({ open, onClose, subjects: catalog, categories, sear
             value={customName}
             onChange={(event) => setCustomName(event.target.value)}
             placeholder="Subject name e.g. Flutter Development"
-            className="h-11 w-full rounded-xl border border-[#ded9ef] bg-white px-3 text-sm font-semibold outline-none focus:border-[#7651f1]"
+            className="h-11 w-full rounded-xl border border-[#ded9ef] bg-white px-3 text-sm font-normal outline-none focus:border-[#7651f1]"
           />
           <textarea
             value={customDescription}
             onChange={(event) => setCustomDescription(event.target.value)}
             placeholder="Short description e.g. Widgets, state management and Firebase"
             rows={3}
-            className="mt-3 w-full resize-none rounded-xl border border-[#ded9ef] bg-white px-3 py-3 text-sm font-semibold outline-none focus:border-[#7651f1]"
+            className="mt-3 w-full resize-none rounded-xl border border-[#ded9ef] bg-white px-3 py-3 text-sm font-normal outline-none focus:border-[#7651f1]"
           />
           <button
             type="button"
             disabled={!customName.trim()}
             onClick={onCreate}
-            className="mt-3 flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-[#171a3e] px-4 text-xs font-extrabold text-white transition hover:bg-[#252955] disabled:cursor-not-allowed disabled:opacity-40"
+            className="mt-3 flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-[#171a3e] px-4 text-xs font-normal text-white transition hover:bg-[#252955] disabled:cursor-not-allowed disabled:opacity-40"
           >
             <CheckCircle2 size={17} /> Add Custom Subject
           </button>
@@ -697,8 +695,8 @@ function PopularExamsModal({ open, onClose, exams, onSelect }) {
           >
             <CatalogLogo item={item} large />
             <span className="min-w-0 flex-1">
-              <span className="block text-sm font-extrabold text-[#202643]">{item.title}</span>
-              <span className="mt-1 block text-[10px] font-medium text-[#7a829f]">{item.subtitle}</span>
+              <span className="block text-sm font-normal text-[#202643]">{item.title}</span>
+              <span className="mt-1 block text-[10px] font-normal text-[#7a829f]">{item.subtitle}</span>
             </span>
             <ChevronRight size={18} className="text-[#aaa2c4]" />
           </button>
@@ -735,34 +733,34 @@ function EditSummaryModal({ open, onClose, exam, subjects, topic, questionCount,
     >
       <div className="space-y-5 p-5 sm:p-7">
         <div className="rounded-2xl bg-[#faf8ff] p-4">
-          <p className="text-[10px] font-bold uppercase tracking-wider text-[#8a83a9]">Current Selection</p>
-          <p className="mt-1 text-sm font-extrabold text-[#252b48]">{exam.title} · {subjects.join(", ")}</p>
+          <p className="text-[10px] font-normal uppercase tracking-wider text-[#8a83a9]">Current Selection</p>
+          <p className="mt-1 text-sm font-normal text-[#252b48]">{exam.title} · {subjects.join(", ")}</p>
         </div>
 
         <label className="block">
-          <span className="mb-2 block text-xs font-extrabold text-[#3b4160]">Topic</span>
-          <input value={localTopic} onChange={(event) => setLocalTopic(event.target.value)} className="h-11 w-full rounded-xl border border-[#ddd9ef] bg-white px-3 text-sm font-semibold outline-none focus:border-[#7651f1]" />
+          <span className="mb-2 block text-xs font-normal text-[#3b4160]">Topic</span>
+          <input value={localTopic} onChange={(event) => setLocalTopic(event.target.value)} className="h-11 w-full rounded-xl border border-[#ddd9ef] bg-white px-3 text-sm font-normal outline-none focus:border-[#7651f1]" />
         </label>
 
         <label className="block">
-          <span className="mb-2 block text-xs font-extrabold text-[#3b4160]">Questions</span>
-          <input type="number" min="1" max="200" value={localCount} onChange={(event) => setLocalCount(event.target.value)} className="h-11 w-full rounded-xl border border-[#ddd9ef] bg-white px-3 text-sm font-semibold outline-none focus:border-[#7651f1]" />
+          <span className="mb-2 block text-xs font-normal text-[#3b4160]">Questions</span>
+          <input type="number" min="1" max="200" value={localCount} onChange={(event) => setLocalCount(event.target.value)} className="h-11 w-full rounded-xl border border-[#ddd9ef] bg-white px-3 text-sm font-normal outline-none focus:border-[#7651f1]" />
         </label>
 
         <div>
-          <span className="mb-2 block text-xs font-extrabold text-[#3b4160]">Difficulty</span>
+          <span className="mb-2 block text-xs font-normal text-[#3b4160]">Difficulty</span>
           <div className="grid grid-cols-3 gap-2">
             {difficulties.map((item) => (
-              <button type="button" key={item.id} onClick={() => setLocalDifficulty(item.label)} className={`rounded-xl border px-2 py-3 text-xs font-extrabold ${localDifficulty === item.label ? "border-[#6d28f0] bg-[#f1ebff] text-[#6425ed]" : "border-[#e4e1ee] bg-white text-[#656d8a]"}`}>{item.label}</button>
+              <button type="button" key={item.id} onClick={() => setLocalDifficulty(item.label)} className={`rounded-xl border px-2 py-3 text-xs font-normal ${localDifficulty === item.label ? "border-[#6d28f0] bg-[#f1ebff] text-[#6425ed]" : "border-[#e4e1ee] bg-white text-[#656d8a]"}`}>{item.label}</button>
             ))}
           </div>
         </div>
 
         <div>
-          <span className="mb-2 block text-xs font-extrabold text-[#3b4160]">Language</span>
+          <span className="mb-2 block text-xs font-normal text-[#3b4160]">Language</span>
           <div className="grid grid-cols-3 gap-2">
             {languages.map((item) => (
-              <button type="button" key={item.id} onClick={() => setLocalLanguage(item.label)} className={`rounded-xl border px-2 py-3 text-xs font-extrabold ${localLanguage === item.label ? "border-[#6d28f0] bg-[#f1ebff] text-[#6425ed]" : "border-[#e4e1ee] bg-white text-[#656d8a]"}`}>{item.label}</button>
+              <button type="button" key={item.id} onClick={() => setLocalLanguage(item.label)} className={`rounded-xl border px-2 py-3 text-xs font-normal ${localLanguage === item.label ? "border-[#6d28f0] bg-[#f1ebff] text-[#6425ed]" : "border-[#e4e1ee] bg-white text-[#656d8a]"}`}>{item.label}</button>
             ))}
           </div>
         </div>
@@ -770,7 +768,7 @@ function EditSummaryModal({ open, onClose, exam, subjects, topic, questionCount,
         <button
           type="button"
           onClick={() => onSave({ topic: localTopic, count: localCount, difficulty: localDifficulty, language: localLanguage })}
-          className="flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#7630ff] to-[#5420ee] text-sm font-extrabold text-white shadow-lg shadow-purple-200"
+          className="flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#7630ff] to-[#5420ee] text-sm font-normal text-white shadow-lg shadow-purple-200"
         >
           <CheckCircle2 size={18} /> Save Changes
         </button>
@@ -779,7 +777,17 @@ function EditSummaryModal({ open, onClose, exam, subjects, topic, questionCount,
   );
 }
 
-function MockTests({ onLogout, onMockTests, onStartTest, onHome }) {
+function MockTests({
+  onLogout,
+  onMockTests,
+  onStartTest,
+  onHome,
+  onAI,
+  onProfile,
+  onRoadmaps,
+  onTarget,
+  onPYQ,
+}) {
   const [exam, setExam] = useState("upsc");
   const [selectedSubjects, setSelectedSubjects] = useState(["general"]);
   const [topic, setTopic] = useState("Environment & Ecology");
@@ -861,7 +869,6 @@ function MockTests({ onLogout, onMockTests, onStartTest, onHome }) {
       return [...current, id];
     });
   };
-
 
   const handleOtherExamSelect = (item) => {
     setCustomExams((current) => current.some((value) => value.id === item.id) ? current : [...current, item]);
@@ -1016,12 +1023,17 @@ function MockTests({ onLogout, onMockTests, onStartTest, onHome }) {
 
   return (
     <div className="min-h-screen w-full overflow-x-hidden bg-[#f7f5ff] text-[#11183b]">
-      <Navbar
-        onLogout={onLogout}
-        onMockTests={onMockTests}
-        onHome={onHome}
-        activeItem="Mock Tests"
-      />
+<Navbar
+  onLogout={onLogout}
+  onMockTests={onMockTests}
+  onHome={onHome}
+  onAI={onAI}
+  onProfile={onProfile}
+  onRoadmaps={onRoadmaps}
+  onTarget={onTarget}
+  onPYQ={onPYQ}
+  activePage="mock"
+/>
 
       <main
         className="relative min-h-screen bg-cover bg-center bg-no-repeat px-4 pb-10 pt-[92px] sm:px-6 lg:px-8 lg:pb-12 lg:pt-[102px]"
@@ -1033,7 +1045,7 @@ function MockTests({ onLogout, onMockTests, onStartTest, onHome }) {
           <button
             type="button"
             onClick={onHome}
-            className="mb-4 inline-flex items-center gap-2 text-[13px] font-semibold text-[#5f5b9c] transition hover:text-[#6425ed]"
+            className="mb-4 inline-flex items-center gap-2 text-[13px] font-normal text-[#5f5b9c] transition hover:text-[#6425ed]"
           >
             <ArrowLeft size={17} />
             Back to Mock Tests
@@ -1041,19 +1053,19 @@ function MockTests({ onLogout, onMockTests, onStartTest, onHome }) {
 
           <div className="mb-7 flex flex-col justify-between gap-5 lg:flex-row lg:items-end">
             <div>
-              <h1 className="text-4xl font-black tracking-[-0.04em] text-[#10163b] sm:text-5xl lg:text-[42px]">
-                Create Your <span className="bg-gradient-to-r from-[#7625f5] to-[#263cff] bg-clip-text text-transparent">Mock Test</span>
+              <h1 className="text-4xl font-normal tracking-[-0.04em] text-[#10163b] sm:text-5xl lg:text-[42px]">
+                Create Your <span className="bg-gradient-to-r from-[#0e051c] to-[#040409] bg-clip-text text-transparent">Mock Test</span>
               </h1>
-              <p className="mt-2 max-w-[760px] text-sm font-medium text-[#697399] sm:text-[15px]">
+              <p className="mt-2 max-w-[760px] text-sm font-normal text-[#697399] sm:text-[15px]">
                 Customize your test with the options below and get a test tailored to your needs.
               </p>
             </div>
 
             <div className="hidden items-center gap-4 lg:flex">
               <div className="text-right text-[#3924a6]">
-                <div className="text-[17px] font-bold italic leading-tight">Practice</div>
-                <div className="text-[17px] font-bold italic leading-tight">Smart</div>
-                <div className="text-[17px] font-bold italic leading-tight">Score Higher</div>
+                <div className="text-[17px] font-normal italic leading-tight">Practice</div>
+                <div className="text-[17px] font-normal italic leading-tight">Smart</div>
+                <div className="text-[17px] font-normal italic leading-tight">Score Higher</div>
               </div>
               <div className="flex h-20 w-20 items-center justify-center rounded-3xl bg-white/60 shadow-sm">
                 <Sparkles className="text-[#7a31f5]" size={34} />
@@ -1070,7 +1082,7 @@ function MockTests({ onLogout, onMockTests, onStartTest, onHome }) {
                     title="Select Exam"
                     subtitle="Choose the exam for which you want to practice."
                     action={
-                      <button type="button" onClick={() => setShowPopularModal(true)} className="hidden items-center gap-2 rounded-xl border border-[#e2dcff] bg-white px-4 py-2 text-xs font-bold text-[#4037a3] sm:flex">
+                      <button type="button" onClick={() => setShowPopularModal(true)} className="hidden items-center gap-2 rounded-xl border border-[#e2dcff] bg-white px-4 py-2 text-xs font-normal text-[#4037a3] sm:flex">
                         <Flame size={16} className="text-[#ff496e]" />
                         Popular Exams
                       </button>
@@ -1094,8 +1106,8 @@ function MockTests({ onLogout, onMockTests, onStartTest, onHome }) {
                           <div className="flex h-full items-center gap-2.5">
                             <ExamLogo exam={item} />
                             <span className="min-w-0">
-                              <span className="block truncate text-[12px] font-extrabold text-[#202643]">{item.title}</span>
-                              <span className="mt-0.5 block truncate text-[9px] font-medium text-[#7d849d]">{item.subtitle}</span>
+                              <span className="block truncate text-[12px] font-normal text-[#202643]">{item.title}</span>
+                              <span className="mt-0.5 block truncate text-[9px] font-normal text-[#7d849d]">{item.subtitle}</span>
                             </span>
                           </div>
                         </SelectionCard>
@@ -1113,7 +1125,7 @@ function MockTests({ onLogout, onMockTests, onStartTest, onHome }) {
                       <button
                         type="button"
                         onClick={() => setShowCustomSubjectModal(true)}
-                        className="flex items-center gap-1.5 rounded-xl border border-[#ded6ff] bg-white px-3.5 py-2 text-xs font-bold text-[#6425ed] transition hover:border-[#c9baff] hover:bg-[#faf8ff]"
+                        className="flex items-center gap-1.5 rounded-xl border border-[#ded6ff] bg-white px-3.5 py-2 text-xs font-normal text-[#6425ed] transition hover:border-[#c9baff] hover:bg-[#faf8ff]"
                       >
                         <Plus size={16} /> Custom Subject
                       </button>
@@ -1134,7 +1146,7 @@ function MockTests({ onLogout, onMockTests, onStartTest, onHome }) {
                             <span className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg ${selected ? "bg-[#eee7ff] text-[#6425ed]" : "bg-[#f1f5ff] text-[#3c65dc]"}`}>
                               <Icon size={17} />
                             </span>
-                            <span className="text-[11px] font-bold leading-4 text-[#242b49]">{item.title}</span>
+                            <span className="text-[11px] font-normal leading-4 text-[#242b49]">{item.title}</span>
                           </div>
                         </SelectionCard>
                       );
@@ -1151,7 +1163,7 @@ function MockTests({ onLogout, onMockTests, onStartTest, onHome }) {
                       className="flex h-[52px] w-full items-center gap-3 rounded-2xl border border-[#ddd9f2] bg-white px-4 text-left shadow-sm"
                     >
                       <Search size={19} className="text-[#687092]" />
-                      <span className="flex-1 text-sm font-semibold text-[#252b47]">{topic || "Select a topic"}</span>
+                      <span className="flex-1 text-sm font-normal text-[#252b47]">{topic || "Select a topic"}</span>
                       {topic && <X size={17} className="text-[#6e7590]" onClick={(event) => { event.stopPropagation(); setTopic(""); }} />}
                       <ChevronDown size={19} className={`text-[#505979] transition ${topicOpen ? "rotate-180" : ""}`} />
                     </button>
@@ -1167,7 +1179,7 @@ function MockTests({ onLogout, onMockTests, onStartTest, onHome }) {
                               if (event.key === "Enter") handleCreateTopic();
                             }}
                             placeholder="Search or type a custom topic..."
-                            className="h-10 min-w-0 flex-1 bg-transparent text-sm font-semibold text-[#252b47] outline-none placeholder:text-[#9aa0b8]"
+                            className="h-10 min-w-0 flex-1 bg-transparent text-sm font-normal text-[#252b47] outline-none placeholder:text-[#9aa0b8]"
                           />
                           {customTopicName && (
                             <button
@@ -1194,7 +1206,7 @@ function MockTests({ onLogout, onMockTests, onStartTest, onHome }) {
                                   setCustomTopicName("");
                                   setTopicOpen(false);
                                 }}
-                                className={`w-full rounded-xl px-3 py-2.5 text-left text-sm font-semibold transition hover:bg-[#f5f1ff] ${topic === item ? "bg-[#f1ebff] text-[#6425ed]" : "text-[#343b5b]"}`}
+                                className={`w-full rounded-xl px-3 py-2.5 text-left text-sm font-normal transition hover:bg-[#f5f1ff] ${topic === item ? "bg-[#f1ebff] text-[#6425ed]" : "text-[#343b5b]"}`}
                               >
                                 {item}
                               </button>
@@ -1208,7 +1220,7 @@ function MockTests({ onLogout, onMockTests, onStartTest, onHome }) {
                             <button
                               type="button"
                               onClick={handleCreateTopic}
-                              className="mt-2 flex w-full items-center gap-2 rounded-xl bg-[#f1ebff] px-3 py-3 text-left text-sm font-extrabold text-[#6425ed] transition hover:bg-[#e9e0ff]"
+                              className="mt-2 flex w-full items-center gap-2 rounded-xl bg-[#f1ebff] px-3 py-3 text-left text-sm font-normal text-[#6425ed] transition hover:bg-[#e9e0ff]"
                             >
                               <Plus size={17} />
                               Add “{customTopicName.trim()}” as custom topic
@@ -1227,7 +1239,7 @@ function MockTests({ onLogout, onMockTests, onStartTest, onHome }) {
                         type="button"
                         key={count}
                         onClick={() => setQuestionCount(count)}
-                        className={`h-[46px] rounded-xl border text-sm font-bold transition ${questionCount === count ? "border-[#6d28f0] bg-gradient-to-r from-[#6f23f3] to-[#5527ec] text-white shadow-[0_8px_20px_rgba(101,38,237,0.20)]" : "border-[#e4e4f1] bg-white text-[#515a7c] hover:border-[#cfc3ff]"}`}
+                        className={`h-[46px] rounded-xl border text-sm font-normal transition ${questionCount === count ? "border-[#6d28f0] bg-gradient-to-r from-[#6f23f3] to-[#5527ec] text-white shadow-[0_8px_20px_rgba(101,38,237,0.20)]" : "border-[#e4e4f1] bg-white text-[#515a7c] hover:border-[#cfc3ff]"}`}
                       >
                         {count}
                       </button>
@@ -1235,7 +1247,7 @@ function MockTests({ onLogout, onMockTests, onStartTest, onHome }) {
                     <button
                       type="button"
                       onClick={() => setQuestionCount("custom")}
-                      className={`h-[46px] rounded-xl border text-sm font-bold transition sm:col-span-1 ${questionCount === "custom" ? "border-[#6d28f0] bg-gradient-to-r from-[#6f23f3] to-[#5527ec] text-white" : "border-[#e4e4f1] bg-white text-[#515a7c] hover:border-[#cfc3ff]"}`}
+                      className={`h-[46px] rounded-xl border text-sm font-normal transition sm:col-span-1 ${questionCount === "custom" ? "border-[#6d28f0] bg-gradient-to-r from-[#6f23f3] to-[#5527ec] text-white" : "border-[#e4e4f1] bg-white text-[#515a7c] hover:border-[#cfc3ff]"}`}
                     >
                       Custom
                     </button>
@@ -1248,9 +1260,9 @@ function MockTests({ onLogout, onMockTests, onStartTest, onHome }) {
                         max="200"
                         value={customCount}
                         onChange={(event) => setCustomCount(event.target.value)}
-                        className="h-11 w-full max-w-[180px] rounded-xl border border-[#ddd9f2] bg-white px-3 text-sm font-semibold outline-none focus:border-[#6d28f0]"
+                        className="h-11 w-full max-w-[180px] rounded-xl border border-[#ddd9f2] bg-white px-3 text-sm font-normal outline-none focus:border-[#6d28f0]"
                       />
-                      <span className="text-xs font-medium text-[#7a819b]">Choose 1–200 questions</span>
+                      <span className="text-xs font-normal text-[#7a819b]">Choose 1–200 questions</span>
                     </div>
                   )}
                 </div>
@@ -1269,7 +1281,7 @@ function MockTests({ onLogout, onMockTests, onStartTest, onHome }) {
                         >
                           <div className="flex items-center gap-2">
                             <span className={`flex h-8 w-8 items-center justify-center rounded-full text-lg ${item.tone}`}>{item.emoji}</span>
-                            <span className="text-sm font-bold text-[#232943]">{item.label}</span>
+                            <span className="text-sm font-normal text-[#232943]">{item.label}</span>
                           </div>
                         </SelectionCard>
                       );
@@ -1290,8 +1302,8 @@ function MockTests({ onLogout, onMockTests, onStartTest, onHome }) {
                           className="flex h-[54px] items-center justify-center rounded-xl border px-3"
                         >
                           <div className="flex items-center gap-2">
-                            <span className={`flex h-8 min-w-8 items-center justify-center rounded-full px-1 text-xs font-extrabold ${selected ? "bg-[#6d28f0] text-white" : "bg-[#f1f3fb] text-[#4d587a]"}`}>{item.icon}</span>
-                            <span className="text-sm font-bold text-[#232943]">{item.label}</span>
+                            <span className={`flex h-8 min-w-8 items-center justify-center rounded-full px-1 text-xs font-normal ${selected ? "bg-[#6d28f0] text-white" : "bg-[#f1f3fb] text-[#4d587a]"}`}>{item.icon}</span>
+                            <span className="text-sm font-normal text-[#232943]">{item.label}</span>
                           </div>
                         </SelectionCard>
                       );
@@ -1302,7 +1314,7 @@ function MockTests({ onLogout, onMockTests, onStartTest, onHome }) {
                 <button
                   type="button"
                   onClick={handleGenerate}
-                  className="mx-auto flex h-[56px] w-full max-w-[360px] items-center justify-center gap-3 rounded-full bg-gradient-to-r from-[#6e22f5] via-[#6323f0] to-[#5424e8] px-6 text-base font-extrabold text-white shadow-[0_12px_30px_rgba(101,38,237,0.28)] transition hover:-translate-y-0.5 hover:shadow-[0_16px_35px_rgba(101,38,237,0.32)]"
+                  className="mx-auto flex h-[56px] w-full max-w-[360px] items-center justify-center gap-3 rounded-full bg-gradient-to-r from-[#6e22f5] via-[#6323f0] to-[#5424e8] px-6 text-base font-normal text-white shadow-[0_12px_30px_rgba(101,38,237,0.28)] transition hover:-translate-y-0.5 hover:shadow-[0_16px_35px_rgba(101,38,237,0.32)]"
                 >
                   <Sparkles size={19} />
                   Generate Mock Test
@@ -1316,9 +1328,9 @@ function MockTests({ onLogout, onMockTests, onStartTest, onHome }) {
                 <div className="mb-5 flex items-center justify-between">
                   <div className="flex items-center gap-3">
                     <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#eee7ff] text-[#6425ed]"><ClipboardCheck size={21} /></span>
-                    <h2 className="text-[18px] font-extrabold text-[#11183b]">Test Summary</h2>
+                    <h2 className="text-[18px] font-normal text-[#11183b]">Test Summary</h2>
                   </div>
-                  <button type="button" className="flex items-center gap-1.5 rounded-xl border border-[#e1d9ff] bg-[#faf8ff] px-3 py-2 text-xs font-bold text-[#6425ed]">
+                  <button type="button" className="flex items-center gap-1.5 rounded-xl border border-[#e1d9ff] bg-[#faf8ff] px-3 py-2 text-xs font-normal text-[#6425ed]">
                     <Pencil size={14} /> Edit
                   </button>
                 </div>
@@ -1332,9 +1344,9 @@ function MockTests({ onLogout, onMockTests, onStartTest, onHome }) {
                     ["Language", selectedLanguage?.label],
                   ].map(([label, value]) => (
                     <div key={label} className="grid grid-cols-[88px_14px_minmax(0,1fr)] gap-2 text-sm">
-                      <span className="font-semibold text-[#717a9c]">{label}</span>
-                      <span className="font-bold text-[#8a8fa6]">:</span>
-                      <span className="font-semibold text-[#252b48]">{value}</span>
+                      <span className="font-normal text-[#717a9c]">{label}</span>
+                      <span className="font-normal text-[#8a8fa6]">:</span>
+                      <span className="font-normal text-[#252b48]">{value}</span>
                     </div>
                   ))}
                 </div>
@@ -1344,16 +1356,16 @@ function MockTests({ onLogout, onMockTests, onStartTest, onHome }) {
                 <div className="mb-4 flex items-center justify-between">
                   <div className="flex items-center gap-3">
                     <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#eee7ff] text-[#6425ed]"><CircleHelp size={21} /></span>
-                    <h2 className="text-[16px] font-extrabold text-[#32275d]">Preview (Sample Question)</h2>
+                    <h2 className="text-[16px] font-normal text-[#32275d]">Preview (Sample Question)</h2>
                   </div>
-                  <span className="rounded-full bg-[#fff0dc] px-3 py-1 text-[11px] font-bold text-[#f07a1c]">{selectedDifficulty?.label}</span>
+                  <span className="rounded-full bg-[#fff0dc] px-3 py-1 text-[11px] font-normal text-[#f07a1c]">{selectedDifficulty?.label}</span>
                 </div>
-                <p className="text-[13px] font-semibold leading-5 text-[#27304e]">
+                <p className="text-[13px] font-normal leading-5 text-[#27304e]">
                   Which of the following is/are the major cause(s) of groundwater depletion in India?
                 </p>
                 <div className="mt-4 space-y-2.5">
                   {["Over-extraction for agriculture", "Rapid urbanization", "Poor water management", "All of the above"].map((option, index) => (
-                    <div key={option} className="flex items-center gap-2.5 text-[12px] font-medium text-[#454d6b]">
+                    <div key={option} className="flex items-center gap-2.5 text-[12px] font-normal text-[#454d6b]">
                       <span className="h-4 w-4 rounded-full border-2 border-[#a9afc5]" />
                       {index + 1}. {option}
                     </div>
@@ -1364,7 +1376,7 @@ function MockTests({ onLogout, onMockTests, onStartTest, onHome }) {
               <div className="rounded-[24px] border border-white/80 bg-white/90 p-5 shadow-[0_16px_50px_rgba(83,52,180,0.08)] sm:p-6">
                 <div className="mb-4 flex items-center gap-3">
                   <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#fff1cf] text-[#ff9c13]"><Sparkles size={21} /></span>
-                  <h2 className="text-[17px] font-extrabold text-[#11183b]">Benefits</h2>
+                  <h2 className="text-[17px] font-normal text-[#11183b]">Benefits</h2>
                 </div>
                 <div className="grid grid-cols-2 gap-3">
                   {[
@@ -1375,8 +1387,8 @@ function MockTests({ onLogout, onMockTests, onStartTest, onHome }) {
                   ].map(([Icon, line1, line2, tone]) => (
                     <div key={line1} className="flex flex-col items-center rounded-2xl bg-[#fafaff] px-2 py-3 text-center">
                       <span className={`mb-2 flex h-10 w-10 items-center justify-center rounded-xl ${tone}`}><Icon size={20} /></span>
-                      <span className="text-[11px] font-bold text-[#4c5475]">{line1}</span>
-                      <span className="text-[11px] font-bold text-[#4c5475]">{line2}</span>
+                      <span className="text-[11px] font-normal text-[#4c5475]">{line1}</span>
+                      <span className="text-[11px] font-normal text-[#4c5475]">{line2}</span>
                     </div>
                   ))}
                 </div>

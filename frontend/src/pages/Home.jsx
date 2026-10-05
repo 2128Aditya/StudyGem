@@ -15,25 +15,30 @@ import Navbar from "../components/Navbar";
 import homeBg from "../assets/new.png";
 
 const Home = ({
- onLogout,
+  onLogout,
   onMockTests,
   onAI,
   onProfile,
   onRoadmaps,
+  onTarget,
+  onPYQ,
 }) => {
   return (
     <div className="w-full min-h-screen bg-[#f8f6ff] overflow-x-hidden">
       {/* =========================
           NAVBAR
       ========================= */}
-<Navbar
-  onLogout={onLogout}
-  onMockTests={onMockTests}
-  onAI={onAI}
-  onProfile={onProfile}
-    onRoadmaps={onRoadmaps}
-  activePage="home"
-/>
+      <Navbar
+        onLogout={onLogout}
+        onMockTests={onMockTests}
+        onAI={onAI}
+        onProfile={onProfile}
+        onRoadmaps={onRoadmaps}
+        onTarget={onTarget}
+        onPYQ={onPYQ}
+        activePage="home"
+      />
+
       {/* =========================
           HERO
       ========================= */}

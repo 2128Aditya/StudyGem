@@ -11,30 +11,56 @@ import MockTestResult from "./pages/MockTestResult";
 import AIAssistant from "./pages/AIAssistant";
 import Roadmap from "./pages/Roadmaps";
 import Target from "./pages/Target";
+import PYQ from "./pages/PYQ";
+import Leaderboard from "./pages/Leaderboard";
+import AdminDashboard from "./pages/AdminDashboard";
 
 function App() {
   // =========================
   // PAGE STATE
   // =========================
+
   const [page, setPage] = useState(() => {
     const token = localStorage.getItem("studyGemToken");
+    const savedUser = localStorage.getItem("studyGemUser");
 
-    return token ? "home" : "login";
+    if (!token) {
+      return "login";
+    }
+
+    try {
+      const user = JSON.parse(savedUser);
+
+      return user?.role === "admin"
+        ? "admin-dashboard"
+        : "home";
+    } catch {
+      return "home";
+    }
   });
 
   // =========================
   // MOCK TEST CONFIG
   // =========================
+
   const [testConfig, setTestConfig] = useState(null);
 
   // =========================
   // MOCK TEST RESULT
   // =========================
+
   const [testResult, setTestResult] = useState(null);
+
+  // =========================
+  // PROFILE REFRESH
+  // =========================
+
+  const [profileRefreshKey, setProfileRefreshKey] = useState(0);
 
   // =========================
   // LOGOUT
   // =========================
+
   const handleLogout = () => {
     localStorage.removeItem("studyGemToken");
     localStorage.removeItem("studyGemUser");
@@ -48,6 +74,7 @@ function App() {
   // =========================
   // HOME
   // =========================
+
   const openHome = () => {
     setPage("home");
   };
@@ -55,6 +82,7 @@ function App() {
   // =========================
   // PROFILE
   // =========================
+
   const openProfile = () => {
     setPage("profile");
   };
@@ -62,6 +90,7 @@ function App() {
   // =========================
   // AI ASSISTANT
   // =========================
+
   const openAI = () => {
     setPage("ai");
   };
@@ -69,6 +98,7 @@ function App() {
   // =========================
   // MOCK TESTS
   // =========================
+
   const openMockTests = () => {
     setPage("mock-create");
   };
@@ -76,6 +106,7 @@ function App() {
   // =========================
   // ROADMAP
   // =========================
+
   const openRoadmaps = () => {
     setPage("roadmaps");
   };
@@ -83,13 +114,31 @@ function App() {
   // =========================
   // TARGET
   // =========================
+
   const openTarget = () => {
     setPage("target");
   };
 
   // =========================
+  // PYQ
+  // =========================
+
+  const openPYQ = () => {
+    setPage("pyq");
+  };
+
+  // =========================
+  // LEADERBOARD
+  // =========================
+
+  const openLeaderboard = () => {
+    setPage("leaderboard");
+  };
+
+  // =========================
   // START MOCK TEST
   // =========================
+
   const startMockTest = (config) => {
     setTestConfig(config);
     setTestResult(null);
@@ -100,6 +149,7 @@ function App() {
   // =========================
   // FINISH MOCK TEST
   // =========================
+
   const finishMockTest = async (resultData) => {
     try {
       const token = localStorage.getItem("studyGemToken");
@@ -107,7 +157,14 @@ function App() {
       if (!token) {
         console.error("StudyGem token not found.");
 
-        setTestResult(resultData);
+        const finalResult = {
+          ...resultData,
+          testConfig:
+            resultData?.testConfig || testConfig,
+        };
+
+        setTestResult(finalResult);
+        setProfileRefreshKey((prev) => prev + 1);
         setPage("mock-result");
 
         return;
@@ -116,6 +173,35 @@ function App() {
       const API_BASE_URL =
         import.meta.env.VITE_API_URL ||
         "http://localhost:5000/api";
+
+      // MockTestInterface may not send testConfig
+      // back inside resultData.
+      // Therefore use App-level testConfig as fallback.
+
+      const finalTestConfig =
+        resultData?.testConfig || testConfig;
+
+      const finalQuestions = Array.isArray(
+        resultData?.questions
+      )
+        ? resultData.questions
+        : [];
+
+      const finalAnswers =
+        resultData?.answers &&
+        typeof resultData.answers === "object"
+          ? resultData.answers
+          : {};
+
+      const finalTimeTakenSeconds =
+        Number(resultData?.timeTakenSeconds) || 0;
+
+      console.log("Saving Mock Test Attempt:", {
+        testConfig: finalTestConfig,
+        questions: finalQuestions,
+        answers: finalAnswers,
+        timeTakenSeconds: finalTimeTakenSeconds,
+      });
 
       const response = await fetch(
         `${API_BASE_URL}/mock/attempt`,
@@ -128,11 +214,10 @@ function App() {
           },
 
           body: JSON.stringify({
-            testConfig: resultData.testConfig,
-            questions: resultData.questions,
-            answers: resultData.answers,
-            timeTakenSeconds:
-              resultData.timeTakenSeconds || 0,
+            testConfig: finalTestConfig,
+            questions: finalQuestions,
+            answers: finalAnswers,
+            timeTakenSeconds: finalTimeTakenSeconds,
           }),
         }
       );
@@ -142,7 +227,8 @@ function App() {
       if (!response.ok || !data.success) {
         console.error(
           "Failed to save mock result:",
-          data.message || "Unknown error"
+          data.message || "Unknown error",
+          data
         );
       } else {
         console.log(
@@ -151,7 +237,21 @@ function App() {
         );
       }
 
-      setTestResult(resultData);
+      // Keep the complete result for result page.
+
+      const finalResult = {
+        ...resultData,
+        testConfig: finalTestConfig,
+        questions: finalQuestions,
+        answers: finalAnswers,
+        timeTakenSeconds: finalTimeTakenSeconds,
+      };
+
+      setTestResult(finalResult);
+
+      // Refresh Profile stats after every completed test.
+      setProfileRefreshKey((prev) => prev + 1);
+
       setPage("mock-result");
     } catch (error) {
       console.error(
@@ -159,7 +259,17 @@ function App() {
         error
       );
 
-      setTestResult(resultData);
+      const finalResult = {
+        ...resultData,
+        testConfig:
+          resultData?.testConfig || testConfig,
+      };
+
+      setTestResult(finalResult);
+
+      // Refresh Profile stats even if API request fails.
+      setProfileRefreshKey((prev) => prev + 1);
+
       setPage("mock-result");
     }
   };
@@ -167,6 +277,7 @@ function App() {
   // =========================
   // RETAKE MOCK TEST
   // =========================
+
   const retakeMockTest = () => {
     if (!testResult?.testConfig) {
       return;
@@ -181,6 +292,7 @@ function App() {
   // =========================
   // BACK TO MOCK TEST CREATOR
   // =========================
+
   const backToMockTests = () => {
     setTestResult(null);
     setPage("mock-create");
@@ -192,17 +304,25 @@ function App() {
       {/* =====================================================
           LOGIN
       ===================================================== */}
+
       {page === "login" && (
         <Login
           onSignup={() => setPage("signup")}
           onForgotPassword={() => setPage("forgot")}
-          onLogin={() => setPage("home")}
+          onLogin={(user) => {
+            setPage(
+              user?.role === "admin"
+                ? "admin-dashboard"
+                : "home"
+            );
+          }}
         />
       )}
 
       {/* =====================================================
           SIGNUP
       ===================================================== */}
+
       {page === "signup" && (
         <Signup
           onLogin={() => setPage("login")}
@@ -212,6 +332,7 @@ function App() {
       {/* =====================================================
           FORGOT PASSWORD
       ===================================================== */}
+
       {page === "forgot" && (
         <ForgotPassword
           onLogin={() => setPage("login")}
@@ -219,8 +340,19 @@ function App() {
       )}
 
       {/* =====================================================
+          ADMIN DASHBOARD
+      ===================================================== */}
+
+      {page === "admin-dashboard" && (
+        <AdminDashboard
+          onLogout={handleLogout}
+        />
+      )}
+
+      {/* =====================================================
           HOME
       ===================================================== */}
+
       {page === "home" && (
         <Home
           onLogout={handleLogout}
@@ -230,14 +362,18 @@ function App() {
           onProfile={openProfile}
           onRoadmaps={openRoadmaps}
           onTarget={openTarget}
+          onPYQ={openPYQ}
+          onLeaderboard={openLeaderboard}
         />
       )}
 
       {/* =====================================================
           PROFILE
       ===================================================== */}
+
       {page === "profile" && (
         <Profile
+          profileRefreshKey={profileRefreshKey}
           onBack={openHome}
           onLogout={handleLogout}
           onHome={openHome}
@@ -246,12 +382,15 @@ function App() {
           onProfile={openProfile}
           onRoadmaps={openRoadmaps}
           onTarget={openTarget}
+          onPYQ={openPYQ}
+          onLeaderboard={openLeaderboard}
         />
       )}
 
       {/* =====================================================
           MOCK TEST CREATOR
       ===================================================== */}
+
       {page === "mock-create" && (
         <MockTests
           onLogout={handleLogout}
@@ -261,6 +400,8 @@ function App() {
           onProfile={openProfile}
           onRoadmaps={openRoadmaps}
           onTarget={openTarget}
+          onPYQ={openPYQ}
+          onLeaderboard={openLeaderboard}
           onStartTest={startMockTest}
         />
       )}
@@ -268,6 +409,7 @@ function App() {
       {/* =====================================================
           ACTUAL MOCK TEST
       ===================================================== */}
+
       {page === "mock-test" && (
         <MockTestInterface
           testConfig={testConfig}
@@ -279,6 +421,8 @@ function App() {
           onProfile={openProfile}
           onRoadmaps={openRoadmaps}
           onTarget={openTarget}
+          onPYQ={openPYQ}
+          onLeaderboard={openLeaderboard}
           onFinishTest={finishMockTest}
         />
       )}
@@ -286,6 +430,7 @@ function App() {
       {/* =====================================================
           MOCK TEST RESULT
       ===================================================== */}
+
       {page === "mock-result" && (
         <MockTestResult
           testConfig={testResult?.testConfig}
@@ -299,6 +444,7 @@ function App() {
       {/* =====================================================
           AI ASSISTANT
       ===================================================== */}
+
       {page === "ai" && (
         <AIAssistant
           onLogout={handleLogout}
@@ -308,12 +454,15 @@ function App() {
           onProfile={openProfile}
           onRoadmaps={openRoadmaps}
           onTarget={openTarget}
+          onPYQ={openPYQ}
+          onLeaderboard={openLeaderboard}
         />
       )}
 
       {/* =====================================================
           ROADMAP
       ===================================================== */}
+
       {page === "roadmaps" && (
         <Roadmap
           onLogout={handleLogout}
@@ -323,12 +472,15 @@ function App() {
           onProfile={openProfile}
           onRoadmaps={openRoadmaps}
           onTarget={openTarget}
+          onPYQ={openPYQ}
+          onLeaderboard={openLeaderboard}
         />
       )}
 
       {/* =====================================================
           TARGET
       ===================================================== */}
+
       {page === "target" && (
         <Target
           onLogout={handleLogout}
@@ -338,6 +490,44 @@ function App() {
           onProfile={openProfile}
           onRoadmaps={openRoadmaps}
           onTarget={openTarget}
+          onPYQ={openPYQ}
+          onLeaderboard={openLeaderboard}
+        />
+      )}
+
+      {/* =====================================================
+          PYQ
+      ===================================================== */}
+
+      {page === "pyq" && (
+        <PYQ
+          onLogout={handleLogout}
+          onHome={openHome}
+          onMockTests={openMockTests}
+          onAI={openAI}
+          onProfile={openProfile}
+          onRoadmaps={openRoadmaps}
+          onTarget={openTarget}
+          onPYQ={openPYQ}
+          onLeaderboard={openLeaderboard}
+        />
+      )}
+
+      {/* =====================================================
+          LEADERBOARD
+      ===================================================== */}
+
+      {page === "leaderboard" && (
+        <Leaderboard
+          onLogout={handleLogout}
+          onHome={openHome}
+          onMockTests={openMockTests}
+          onAI={openAI}
+          onProfile={openProfile}
+          onRoadmaps={openRoadmaps}
+          onTarget={openTarget}
+          onPYQ={openPYQ}
+          onLeaderboard={openLeaderboard}
         />
       )}
 

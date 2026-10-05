@@ -1,5 +1,30 @@
 const mongoose = require("mongoose");
 
+const studyProgressSchema = new mongoose.Schema(
+  {
+    subject: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+
+    studiedMinutes: {
+      type: Number,
+      default: 0,
+      min: 0,
+    },
+
+    targetMinutes: {
+      type: Number,
+      default: 0,
+      min: 0,
+    },
+  },
+  {
+    _id: false,
+  }
+);
+
 const userSchema = new mongoose.Schema(
   {
     name: {
@@ -42,10 +67,16 @@ const userSchema = new mongoose.Schema(
       type: Date,
       default: null,
     },
+
+    // Subject-wise study progress
+    studyProgress: {
+      type: [studyProgressSchema],
+      default: [],
+    },
   },
   {
     timestamps: true,
   }
 );
 
-module.exports = mongoose.model("User", userSchema);    
+module.exports = mongoose.model("User", userSchema);

@@ -157,11 +157,15 @@ I’m your StudyGem AI Assistant. I’m ready to help you with your studies, dou
 ========================================================= */
 
 function AIAssistant({
+  onBack,
   onLogout,
   onHome,
   onMockTests,
   onAI,
   onProfile,
+  onRoadmaps,
+  onTarget,
+  onPYQ,
 }) {
   const [messages, setMessages] = useState(() => [
     createWelcomeMessage(),
@@ -429,11 +433,14 @@ function AIAssistant({
       =================================================== */}
 
       <Navbar
-        onLogout={onLogout}
-        onHome={onHome}
-        onMockTests={onMockTests}
-        onAI={onAI}
-        onProfile={onProfile}
+  onLogout={onLogout}
+  onHome={onHome}
+  onMockTests={onMockTests}
+  onAI={onAI}
+  onProfile={onProfile}
+  onRoadmaps={onRoadmaps}
+  onTarget={onTarget}
+  onPYQ={onPYQ}
         activePage="ai"
       />
 

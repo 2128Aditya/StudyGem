@@ -1,4 +1,5 @@
 const express = require("express");
+const protect = require("../middleware/authMiddleware");
 
 const {
   signup,
@@ -8,6 +9,7 @@ const {
   forgotPassword,
   verifyResetOTP,
   resetPassword,
+  updateProfile,
 } = require("../controllers/authController");
 
 const router = express.Router();
@@ -32,5 +34,8 @@ router.post("/verify-reset-otp", verifyResetOTP);
 
 // Forgot password - reset password
 router.post("/reset-password", resetPassword);
+
+// Update profile
+router.put("/profile", protect, updateProfile);
 
 module.exports = router;

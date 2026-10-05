@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+
 import Navbar from "../components/Navbar";
 
 import {
@@ -25,16 +26,38 @@ import {
   Zap,
 } from "lucide-react";
 
-function Profile({ onBack, onLogout }) {
+function Profile({
+  onBack,
+  onLogout,
+  profileRefreshKey,
+  onHome,
+  onMockTests,
+  onAI,
+  onProfile,
+  onRoadmaps,
+  onTarget,
+  onPYQ,
+}) {
   const [activeTab, setActiveTab] = useState("overview");
+
   const [showEdit, setShowEdit] = useState(false);
+
   const [profileData, setProfileData] = useState(null);
+
   const [profileLoading, setProfileLoading] = useState(true);
+
   const [profileError, setProfileError] = useState("");
+
+  const [studyProgress, setStudyProgress] = useState([]);
+
+  const [studyProgressLoading, setStudyProgressLoading] = useState(true);
+
+  const [studyProgressError, setStudyProgressError] = useState("");
 
   const user = useMemo(() => {
     try {
       const saved = localStorage.getItem("studyGemUser");
+
       return saved ? JSON.parse(saved) : {};
     } catch {
       return {};
@@ -76,12 +99,15 @@ function Profile({ onBack, onLogout }) {
         const data = await response.json();
 
         if (!response.ok || !data.success) {
-          throw new Error(data.message || "Unable to load profile data.");
+          throw new Error(
+            data.message || "Unable to load profile data."
+          );
         }
 
         setProfileData(data.stats);
       } catch (error) {
         console.error("Profile Stats Error:", error);
+
         setProfileError(
           error.message || "Unable to load profile data."
         );
@@ -91,14 +117,70 @@ function Profile({ onBack, onLogout }) {
     };
 
     loadProfileStats();
+  }, [API_BASE_URL, profileRefreshKey]);
+
+  useEffect(() => {
+    const loadStudyProgress = async () => {
+      const token = localStorage.getItem("studyGemToken");
+
+      if (!token) {
+        setStudyProgressLoading(false);
+        return;
+      }
+
+      try {
+        setStudyProgressLoading(true);
+        setStudyProgressError("");
+
+        const response = await fetch(
+          `${API_BASE_URL}/study/progress`,
+          {
+            method: "GET",
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
+        const data = await response.json();
+
+        if (!response.ok || !data.success) {
+          throw new Error(
+            data.message || "Unable to load study progress."
+          );
+        }
+
+        setStudyProgress(
+          Array.isArray(data.studyProgress)
+            ? data.studyProgress
+            : []
+        );
+      } catch (error) {
+        console.error("Study Progress Error:", error);
+
+        setStudyProgressError(
+          error.message || "Unable to load study progress."
+        );
+      } finally {
+        setStudyProgressLoading(false);
+      }
+    };
+
+    loadStudyProgress();
   }, [API_BASE_URL]);
 
   const stats = profileData || {};
+
   const totalQuestions = Number(stats.totalQuestions) || 0;
+
   const correct = Number(stats.correct) || 0;
+
   const wrong = Number(stats.wrong) || 0;
+
   const skipped = Number(stats.skipped) || 0;
+
   const accuracy = Number(stats.accuracy) || 0;
+
   const mockTests = Number(stats.totalTests) || 0;
 
   const weeklyActivity = Array.isArray(stats.weeklyActivity)
@@ -118,9 +200,11 @@ function Profile({ onBack, onLogout }) {
     : [];
 
   const streak = Number(stats.streak) || 0;
+
   const leaderboardRank = stats.leaderboardRank
     ? `#${stats.leaderboardRank}`
     : "—";
+
   const badges = Number(stats.badges) || 0;
 
   return (
@@ -128,7 +212,17 @@ function Profile({ onBack, onLogout }) {
       className="min-h-screen w-full overflow-x-hidden bg-[#f6f5ff] text-[#11183b]"
       style={{ fontFamily: "Inter, ui-sans-serif, system-ui, sans-serif" }}
     >
-      <Navbar />
+      <Navbar
+  onLogout={onLogout}
+  onHome={onHome}
+  onMockTests={onMockTests}
+  onAI={onAI}
+  onProfile={onProfile}
+  onRoadmaps={onRoadmaps}
+  onTarget={onTarget}
+  onPYQ={onPYQ}
+  activePage="profile"
+/>
 
       <main className="mx-auto w-full max-w-[1500px] px-3 pb-12 pt-5 sm:px-5 lg:px-8">
         {profileError && (
@@ -154,6 +248,7 @@ function Profile({ onBack, onLogout }) {
             <p className="text-[9px] font-medium uppercase tracking-[0.18em] text-[#777fa0]">
               Student Dashboard
             </p>
+
             <h1 className="mt-0.5 text-[22px] font-semibold tracking-[-0.03em] text-[#10163b]">
               My Profile
             </h1>
@@ -172,18 +267,41 @@ function Profile({ onBack, onLogout }) {
         {/* PROFILE HERO */}
         <section className="relative overflow-hidden rounded-[22px] border border-white bg-white shadow-[0_14px_45px_rgba(83,52,180,0.08)]">
           <div className="absolute inset-0 bg-gradient-to-r from-[#f0ebff] via-white to-[#eef0ff]" />
+
           <div className="absolute -right-24 -top-32 h-80 w-80 rounded-full bg-[#9c7cff]/10 blur-3xl" />
+
           <div className="absolute -bottom-36 left-16 h-80 w-80 rounded-full bg-[#6e55f4]/10 blur-3xl" />
 
           <div className="relative flex flex-col gap-5 p-5 sm:p-6 lg:flex-row lg:items-center lg:justify-between lg:px-7 lg:py-5">
             <div className="flex min-w-0 items-center gap-4 sm:gap-5">
               <div className="relative shrink-0">
-                <div className="flex h-[82px] w-[82px] items-center justify-center rounded-full border-[2px] border-white bg-gradient-to-br from-[#e5e0ff] to-[#c9c3fb] text-[35px] font-medium text-[#11183b] shadow-[0_0_0_2px_#d8d1ff,0_8px_22px_rgba(83,52,180,0.12)] sm:h-[96px] sm:w-[96px] sm:text-[40px]">
-                  {studentName.charAt(0).toUpperCase()}
-                </div>
-                <span className="absolute -bottom-1 -right-1 flex h-8 w-8 items-center justify-center rounded-full border-[3px] border-white bg-[#10163b] text-white shadow-sm">
+                <button
+                  type="button"
+                  onClick={() => setShowEdit(true)}
+                  className="block rounded-full outline-none"
+                  aria-label="Edit profile picture"
+                >
+                  <div className="flex h-[82px] w-[82px] items-center justify-center overflow-hidden rounded-full border-[2px] border-white bg-gradient-to-br from-[#e5e0ff] to-[#c9c3fb] text-[35px] font-medium text-[#11183b] shadow-[0_0_0_2px_#d8d1ff,0_8px_22px_rgba(83,52,180,0.12)] sm:h-[96px] sm:w-[96px] sm:text-[40px]">
+                    {user?.profileImage ? (
+                      <img
+                        src={user.profileImage}
+                        alt={studentName}
+                        className="h-full w-full object-cover"
+                      />
+                    ) : (
+                      studentName.charAt(0).toUpperCase()
+                    )}
+                  </div>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setShowEdit(true)}
+                  className="absolute -bottom-1 -right-1 flex h-8 w-8 items-center justify-center rounded-full border-[3px] border-white bg-[#10163b] text-white shadow-sm transition hover:bg-[#6425ed]"
+                  aria-label="Edit profile"
+                >
                   <Pencil size={13} />
-                </span>
+                </button>
               </div>
 
               <div className="min-w-0">
@@ -191,6 +309,7 @@ function Profile({ onBack, onLogout }) {
                   <h2 className="truncate text-[23px] font-semibold tracking-[-0.035em] text-[#10163b] sm:text-[27px]">
                     {studentName}
                   </h2>
+
                   <span className="rounded-full bg-[#e7dcff] px-2.5 py-1 text-[9px] font-medium text-[#6425ed]">
                     STUDENT
                   </span>
@@ -201,10 +320,12 @@ function Profile({ onBack, onLogout }) {
                     <Mail size={13} />
                     {email}
                   </span>
+
                   <span className="inline-flex items-center gap-1.5">
                     <GraduationCap size={13} />
                     B.Tech CSE (AI)
                   </span>
+
                   <span className="inline-flex items-center gap-1.5">
                     <Target size={13} />
                     MNC Placement
@@ -216,6 +337,7 @@ function Profile({ onBack, onLogout }) {
                     <CalendarDays size={11} className="mr-1 inline" />
                     Learning since 2023
                   </span>
+
                   <span className="rounded-full bg-white px-3 py-1.5 text-[10px] font-normal text-[#626b88] shadow-sm">
                     <Target size={11} className="mr-1 inline" />
                     Target: MNC Placement
@@ -230,11 +352,13 @@ function Profile({ onBack, onLogout }) {
                 value={profileLoading ? "—" : streak}
                 label="Day Streak"
               />
+
               <MiniHeroStat
                 icon={<Trophy size={16} />}
                 value={profileLoading ? "—" : leaderboardRank}
                 label="Leaderboard"
               />
+
               <MiniHeroStat
                 icon={<Award size={16} />}
                 value={profileLoading ? "—" : badges}
@@ -279,6 +403,7 @@ function Profile({ onBack, onLogout }) {
                 trend="↑ 12%"
                 trendClass="text-[#12a66e]"
               />
+
               <StatCard
                 icon={<CheckCircle2 size={20} />}
                 label="Correct Answers"
@@ -288,6 +413,7 @@ function Profile({ onBack, onLogout }) {
                 trend="↑ 10%"
                 trendClass="text-[#12a66e]"
               />
+
               <StatCard
                 icon={<XCircle size={20} />}
                 label="Wrong Answers"
@@ -297,6 +423,7 @@ function Profile({ onBack, onLogout }) {
                 trend="↓ 5%"
                 trendClass="text-[#df4d6a]"
               />
+
               <StatCard
                 icon={<Trophy size={20} />}
                 label="Mock Tests"
@@ -321,7 +448,8 @@ function Profile({ onBack, onLogout }) {
                       type="button"
                       className="rounded-lg border border-[#e6e2f5] px-3 py-1.5 text-[10px] font-medium text-[#202744]"
                     >
-                      Last 7 Days <ChevronDown size={12} className="ml-1 inline" />
+                      Last 7 Days{" "}
+                      <ChevronDown size={12} className="ml-1 inline" />
                     </button>
                   }
                 />
@@ -336,16 +464,25 @@ function Profile({ onBack, onLogout }) {
                         <span className="text-[10px] font-normal text-[#697399]">
                           {value}
                         </span>
+
                         <div className="flex h-[160px] w-full items-end rounded-lg bg-[#f4f1ff] p-1">
                           <div
                             className="w-full rounded-md bg-gradient-to-t from-[#6d28d9] to-[#a78bfa]"
                             style={{
-                              height: `${Math.min(Math.max(value, 10), 100)}%`,
+                              height: `${Math.min(
+                                Math.max(value, 10),
+                                100
+                              )}%`,
                             }}
                           />
                         </div>
+
                         <span className="text-[10px] font-normal text-[#858da6]">
-                          {["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"][index]}
+                          {
+                            ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"][
+                              index
+                            ]
+                          }
                         </span>
                       </div>
                     ))}
@@ -364,7 +501,8 @@ function Profile({ onBack, onLogout }) {
                       type="button"
                       className="text-[10px] font-medium text-[#6425ed]"
                     >
-                      View Detailed Report <ChevronRight size={13} className="inline" />
+                      View Detailed Report{" "}
+                      <ChevronRight size={13} className="inline" />
                     </button>
                   }
                 />
@@ -380,6 +518,7 @@ function Profile({ onBack, onLogout }) {
                       <span className="text-[31px] font-semibold tracking-[-0.04em] text-[#10163b]">
                         {accuracy}%
                       </span>
+
                       <span className="mt-0.5 text-[9px] font-normal text-[#8189a3]">
                         Overall Accuracy
                       </span>
@@ -387,14 +526,33 @@ function Profile({ onBack, onLogout }) {
                   </div>
 
                   <div className="w-full max-w-[270px] overflow-hidden rounded-xl border border-[#ece9f6]">
-                    <MetricRow dot="bg-[#19ae79]" label="Correct" value={correct.toLocaleString()} />
-                    <MetricRow dot="bg-[#ef5c78]" label="Wrong" value={wrong.toLocaleString()} />
-                    <MetricRow dot="bg-[#dfe1ee]" label="Skipped" value={skipped.toLocaleString()} />
+                    <MetricRow
+                      dot="bg-[#19ae79]"
+                      label="Correct"
+                      value={correct.toLocaleString()}
+                    />
+
+                    <MetricRow
+                      dot="bg-[#ef5c78]"
+                      label="Wrong"
+                      value={wrong.toLocaleString()}
+                    />
+
+                    <MetricRow
+                      dot="bg-[#dfe1ee]"
+                      label="Skipped"
+                      value={skipped.toLocaleString()}
+                    />
+
                     <div className="flex items-center justify-between bg-[#f8f6ff] px-3 py-2.5">
                       <span className="text-[10px] font-medium text-[#202744]">
-                        <BookOpen size={13} className="mr-1 inline text-[#6425ed]" />
+                        <BookOpen
+                          size={13}
+                          className="mr-1 inline text-[#6425ed]"
+                        />
                         Total Attempts
                       </span>
+
                       <span className="text-xs font-semibold text-[#10163b]">
                         {totalQuestions.toLocaleString()}
                       </span>
@@ -415,7 +573,8 @@ function Profile({ onBack, onLogout }) {
                     type="button"
                     className="text-[10px] font-medium text-[#6425ed]"
                   >
-                    View All Subjects <ChevronRight size={13} className="inline" />
+                    View All Subjects{" "}
+                    <ChevronRight size={13} className="inline" />
                   </button>
                 }
               />
@@ -425,6 +584,124 @@ function Profile({ onBack, onLogout }) {
                   <SubjectCard key={subject.name} subject={subject} />
                 ))}
               </div>
+            </section>
+
+            {/* SUBJECT-WISE STUDY PROGRESS */}
+            <section className="mt-4 rounded-[22px] border border-white bg-white p-5 shadow-[0_10px_32px_rgba(83,52,180,0.06)] sm:p-6">
+              <SectionHeader
+                icon={<Clock3 size={18} />}
+                title="Subject-wise Study Progress"
+                subtitle="See how much you have studied each subject"
+              />
+
+              {studyProgressError && (
+                <div className="mt-4 rounded-xl border border-[#ffd9e2] bg-[#fff5f7] px-3 py-2.5 text-[10px] font-medium text-[#c43b59]">
+                  {studyProgressError}
+                </div>
+              )}
+
+              {studyProgressLoading ? (
+                <div className="mt-5 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+                  {[1, 2, 3].map((item) => (
+                    <div
+                      key={item}
+                      className="h-[105px] animate-pulse rounded-2xl border border-[#eeeaf7] bg-[#fcfbff]"
+                    />
+                  ))}
+                </div>
+              ) : studyProgress.length === 0 ? (
+                <div className="mt-5 rounded-2xl border border-dashed border-[#ddd5f5] bg-[#fcfbff] px-5 py-8 text-center">
+                  <div className="mx-auto flex h-11 w-11 items-center justify-center rounded-xl bg-[#eee7ff] text-[#6425ed]">
+                    <BookOpen size={20} />
+                  </div>
+
+                  <p className="mt-3 text-xs font-semibold text-[#252b47]">
+                    No study data yet
+                  </p>
+
+                  <p className="mt-1 text-[10px] font-normal text-[#858da6]">
+                    Start studying from Target and your subject-wise progress
+                    will appear here.
+                  </p>
+                </div>
+              ) : (
+                <div className="mt-5 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+                  {studyProgress.map((item) => {
+                    const studiedMinutes =
+                      Number(item.studiedMinutes) || 0;
+
+                    const targetMinutes =
+                      Number(item.targetMinutes) || 0;
+
+                    const studiedHours = Math.floor(
+                      studiedMinutes / 60
+                    );
+
+                    const remainingMinutes = studiedMinutes % 60;
+
+                    const progress =
+                      targetMinutes > 0
+                        ? Math.min(
+                            Math.round(
+                              (studiedMinutes / targetMinutes) * 100
+                            ),
+                            100
+                          )
+                        : 0;
+
+                    return (
+                      <div
+                        key={item.subject}
+                        className="rounded-2xl border border-[#eeeaf7] bg-[#fcfbff] p-4 transition hover:-translate-y-0.5 hover:shadow-md"
+                      >
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="flex min-w-0 items-center gap-3">
+                            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#eee7ff] text-[#6425ed]">
+                              <BookOpen size={18} />
+                            </div>
+
+                            <div className="min-w-0">
+                              <h3 className="truncate text-[12px] font-semibold text-[#252b47]">
+                                {item.subject}
+                              </h3>
+
+                              <p className="mt-1 text-[9px] text-[#858da6]">
+                                {studiedHours}h {remainingMinutes}m studied
+                              </p>
+                            </div>
+                          </div>
+
+                          <span className="shrink-0 text-[15px] font-semibold text-[#6425ed]">
+                            {progress}%
+                          </span>
+                        </div>
+
+                        <div className="mt-4 h-1.5 overflow-hidden rounded-full bg-[#ece9f6]">
+                          <div
+                            className="h-full rounded-full bg-gradient-to-r from-[#7c3aed] to-[#a78bfa]"
+                            style={{ width: `${progress}%` }}
+                          />
+                        </div>
+
+                        <div className="mt-2 flex items-center justify-between text-[8px] text-[#8b92aa]">
+                          <span>
+                            Studied: {studiedHours}h {remainingMinutes}m
+                          </span>
+
+                          <span>
+                            Target:{" "}
+                            {targetMinutes > 0
+                              ? `${Math.floor(
+                                  targetMinutes / 60
+                                )}h ${targetMinutes % 60}m`
+                              : "Not set"}
+                          </span>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
             </section>
 
             {/* STRENGTHS + IMPROVEMENT */}
@@ -525,9 +802,15 @@ function MiniHeroStat({ icon, value, label }) {
         <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#eee7ff] text-[#6425ed]">
           {icon}
         </span>
+
         <div className="min-w-0">
-          <p className="text-sm font-semibold text-[#151c3c]">{value}</p>
-          <p className="text-[8px] font-normal text-[#8088a3]">{label}</p>
+          <p className="text-sm font-semibold text-[#151c3c]">
+            {value}
+          </p>
+
+          <p className="text-[8px] font-normal text-[#8088a3]">
+            {label}
+          </p>
         </div>
       </div>
     </div>
@@ -546,22 +829,30 @@ function StatCard({
   return (
     <div className="rounded-[18px] border border-white bg-white p-4 shadow-[0_8px_26px_rgba(83,52,180,0.05)] sm:p-5">
       <div className="flex items-start justify-between gap-2">
-        <div className={`flex h-10 w-10 items-center justify-center rounded-xl ${iconClass}`}>
+        <div
+          className={`flex h-10 w-10 items-center justify-center rounded-xl ${iconClass}`}
+        >
           {icon}
         </div>
+
         {trend && (
           <span className={`text-[10px] font-medium ${trendClass}`}>
             {trend}
           </span>
         )}
       </div>
+
       <p className="mt-3 text-[10px] font-normal text-[#7b839f] sm:text-xs">
         {label}
       </p>
+
       <p className="mt-0.5 text-[24px] font-semibold tracking-[-0.04em] text-[#10163b] sm:text-[27px]">
         {value}
       </p>
-      <p className="mt-0.5 text-[9px] font-normal text-[#969cb2]">{sub}</p>
+
+      <p className="mt-0.5 text-[9px] font-normal text-[#969cb2]">
+        {sub}
+      </p>
     </div>
   );
 }
@@ -573,15 +864,18 @@ function SectionHeader({ icon, title, subtitle, action }) {
         <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#eee7ff] text-[#6425ed]">
           {icon}
         </span>
+
         <div className="min-w-0">
           <h2 className="text-[15px] font-semibold text-[#10163b] sm:text-[17px]">
             {title}
           </h2>
+
           <p className="mt-0.5 text-[9px] font-normal leading-4 text-[#8189a3] sm:text-[11px]">
             {subtitle}
           </p>
         </div>
       </div>
+
       {action}
     </div>
   );
@@ -594,7 +888,10 @@ function MetricRow({ dot, label, value }) {
         <span className={`h-2.5 w-2.5 rounded-full ${dot}`} />
         {label}
       </span>
-      <span className="text-[11px] font-semibold text-[#202744]">{value}</span>
+
+      <span className="text-[11px] font-semibold text-[#202744]">
+        {value}
+      </span>
     </div>
   );
 }
@@ -607,10 +904,12 @@ function SubjectCard({ subject }) {
           <h3 className="truncate text-[12px] font-medium text-[#252b47]">
             {subject.name}
           </h3>
+
           <p className="mt-1 text-[9px] font-normal text-[#858da6]">
             {subject.questions} questions
           </p>
         </div>
+
         <span className="text-[17px] font-semibold text-[#6425ed]">
           {subject.accuracy}%
         </span>
@@ -625,6 +924,7 @@ function SubjectCard({ subject }) {
 
       <div className="mt-1.5 flex justify-between text-[8px] font-normal text-[#8b92aa]">
         <span>Performance</span>
+
         <span>
           {subject.accuracy >= 80
             ? "Strong"
@@ -646,7 +946,11 @@ function PerformanceList({
 }) {
   return (
     <div className="rounded-[22px] border border-white bg-white p-5 shadow-[0_10px_32px_rgba(83,52,180,0.06)] sm:p-6">
-      <SectionHeader icon={icon} title={title} subtitle={subtitle} />
+      <SectionHeader
+        icon={icon}
+        title={title}
+        subtitle={subtitle}
+      />
 
       <div className="mt-4 space-y-2.5">
         {items.map((item, index) => (
@@ -663,9 +967,12 @@ function PerformanceList({
                 <span className="truncate text-[10px] font-medium text-[#303751]">
                   {item.name}
                 </span>
+
                 <span
                   className={`text-[10px] font-semibold ${
-                    positive ? "text-[#159765]" : "text-[#df4d6a]"
+                    positive
+                      ? "text-[#159765]"
+                      : "text-[#df4d6a]"
                   }`}
                 >
                   {item.accuracy}%
@@ -675,7 +982,9 @@ function PerformanceList({
               <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-[#ece9f6]">
                 <div
                   className={`h-full rounded-full ${
-                    positive ? "bg-[#20b77a]" : "bg-[#e36a83]"
+                    positive
+                      ? "bg-[#20b77a]"
+                      : "bg-[#e36a83]"
                   }`}
                   style={{ width: `${item.accuracy}%` }}
                 />
@@ -700,6 +1009,7 @@ function HistoryRow({ test }) {
           <h3 className="truncate text-xs font-medium text-[#252b47]">
             {test.title}
           </h3>
+
           <p className="mt-1 text-[9px] font-normal text-[#858da6]">
             {test.date} · {test.questions} Questions
           </p>
@@ -712,11 +1022,13 @@ function HistoryRow({ test }) {
           value={test.correct}
           className="text-[#159765]"
         />
+
         <HistoryMetric
           label="Wrong"
           value={test.wrong}
           className="text-[#df4d6a]"
         />
+
         <HistoryMetric
           label="Accuracy"
           value={`${test.accuracy}%`}
@@ -726,11 +1038,15 @@ function HistoryRow({ test }) {
 
       <div className="flex items-center justify-between gap-4 sm:min-w-[120px] sm:justify-end">
         <div className="text-left sm:text-right">
-          <p className="text-[8px] font-normal text-[#8a91aa]">Score</p>
+          <p className="text-[8px] font-normal text-[#8a91aa]">
+            Score
+          </p>
+
           <p className="text-sm font-semibold text-[#202744]">
             {test.score}/{test.maxScore}
           </p>
         </div>
+
         <ChevronRight size={16} className="text-[#a0a6ba]" />
       </div>
     </div>
@@ -740,13 +1056,22 @@ function HistoryRow({ test }) {
 function HistoryMetric({ label, value, className }) {
   return (
     <div className="text-center sm:text-right">
-      <p className="text-[8px] font-normal text-[#8b92aa]">{label}</p>
-      <p className={`mt-0.5 text-xs font-semibold ${className}`}>{value}</p>
+      <p className="text-[8px] font-normal text-[#8b92aa]">
+        {label}
+      </p>
+
+      <p className={`mt-0.5 text-xs font-semibold ${className}`}>
+        {value}
+      </p>
     </div>
   );
 }
 
-function AnalyticsPanel({ accuracy, weeklyActivity, weeklyAccuracy }) {
+function AnalyticsPanel({
+  accuracy,
+  weeklyActivity,
+  weeklyAccuracy,
+}) {
   return (
     <div className="mt-4 space-y-4">
       <section className="grid gap-4 lg:grid-cols-2">
@@ -766,14 +1091,25 @@ function AnalyticsPanel({ accuracy, weeklyActivity, weeklyAccuracy }) {
                 <span className="text-[9px] font-normal text-[#7c84a0]">
                   {value}%
                 </span>
+
                 <div className="relative flex h-[160px] w-full items-end rounded-xl bg-[#f7f4ff] p-1">
                   <div
                     className="w-full rounded-lg bg-gradient-to-t from-[#4f46e5] to-[#8b5cf6]"
-                    style={{ height: `${Math.min(Math.max(value, 10), 100)}%` }}
+                    style={{
+                      height: `${Math.min(
+                        Math.max(value, 10),
+                        100
+                      )}%`,
+                    }}
                   />
                 </div>
+
                 <span className="text-[9px] font-normal text-[#858da6]">
-                  {["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"][index]}
+                  {
+                    ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"][
+                      index
+                    ]
+                  }
                 </span>
               </div>
             ))}
@@ -800,7 +1136,10 @@ function AnalyticsPanel({ accuracy, weeklyActivity, weeklyAccuracy }) {
 
               return (
                 <div key={index} className="text-center">
-                  <div className={`mx-auto h-28 rounded-xl ${level}`} />
+                  <div
+                    className={`mx-auto h-28 rounded-xl ${level}`}
+                  />
+
                   <p className="mt-2 text-[9px] font-normal text-[#858da6]">
                     {["M", "T", "W", "T", "F", "S", "S"][index]}
                   </p>
@@ -814,14 +1153,17 @@ function AnalyticsPanel({ accuracy, weeklyActivity, weeklyAccuracy }) {
               <p className="text-[9px] font-normal text-[#8189a3]">
                 Current Accuracy
               </p>
+
               <p className="mt-1 text-xl font-semibold text-[#6425ed]">
                 {accuracy}%
               </p>
             </div>
+
             <div className="text-right">
               <p className="text-[9px] font-normal text-[#8189a3]">
                 Weekly Goal
               </p>
+
               <p className="mt-1 text-xs font-semibold text-[#202744]">
                 500 Questions
               </p>
@@ -843,16 +1185,19 @@ function AnalyticsPanel({ accuracy, weeklyActivity, weeklyAccuracy }) {
             title="7 Day Streak"
             text="Practiced for 7 days"
           />
+
           <Achievement
             icon={<Trophy size={20} />}
             title="First Test"
             text="Completed your first mock test"
           />
+
           <Achievement
             icon={<Target size={20} />}
             title="80% Club"
             text="Crossed 80% accuracy"
           />
+
           <Achievement
             icon={<Zap size={20} />}
             title="100 Questions"
@@ -870,7 +1215,11 @@ function Achievement({ icon, title, text }) {
       <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#eee7ff] text-[#6425ed]">
         {icon}
       </div>
-      <h3 className="mt-3 text-xs font-semibold text-[#252b47]">{title}</h3>
+
+      <h3 className="mt-3 text-xs font-semibold text-[#252b47]">
+        {title}
+      </h3>
+
       <p className="mt-1 text-[9px] font-normal leading-4 text-[#858da6]">
         {text}
       </p>
@@ -882,13 +1231,47 @@ function EditProfileModal({ user, onClose }) {
   const [name, setName] = useState(
     user?.name || user?.fullName || user?.username || ""
   );
-  const [college, setCollege] = useState(user?.college || "");
+
+  const [college, setCollege] = useState(
+    user?.college || ""
+  );
+
   const [course, setCourse] = useState(
     user?.course || "B.Tech / Computer Science"
   );
+
   const [target, setTarget] = useState(
     user?.target || "MNC Placement"
   );
+
+  const [profileImage, setProfileImage] = useState(
+    user?.profileImage || ""
+  );
+
+  const handleProfileImageChange = (event) => {
+    const file = event.target.files?.[0];
+
+    if (!file) {
+      return;
+    }
+
+    if (!file.type.startsWith("image/")) {
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      alert("Please choose an image smaller than 5MB.");
+      return;
+    }
+
+    const reader = new FileReader();
+
+    reader.onload = () => {
+      setProfileImage(reader.result);
+    };
+
+    reader.readAsDataURL(file);
+  };
 
   const saveProfile = () => {
     try {
@@ -904,6 +1287,7 @@ function EditProfileModal({ user, onClose }) {
           college: college.trim(),
           course: course.trim(),
           target: target.trim(),
+          profileImage,
         })
       );
     } catch {
@@ -911,6 +1295,7 @@ function EditProfileModal({ user, onClose }) {
     }
 
     onClose();
+
     window.location.reload();
   };
 
@@ -922,6 +1307,7 @@ function EditProfileModal({ user, onClose }) {
             <h2 className="text-xl font-semibold text-[#10163b]">
               Edit Profile
             </h2>
+
             <p className="mt-1 text-xs font-normal text-[#7c84a0]">
               Update your student information.
             </p>
@@ -936,11 +1322,73 @@ function EditProfileModal({ user, onClose }) {
           </button>
         </div>
 
+        <div className="mt-6 flex flex-col items-center">
+          <div className="relative">
+            <div className="flex h-24 w-24 items-center justify-center overflow-hidden rounded-full border-[3px] border-white bg-gradient-to-br from-[#e5e0ff] to-[#c9c3fb] text-[38px] font-medium text-[#11183b] shadow-[0_0_0_2px_#d8d1ff,0_8px_22px_rgba(83,52,180,0.12)]">
+              {profileImage ? (
+                <img
+                  src={profileImage}
+                  alt="Profile preview"
+                  className="h-full w-full object-cover"
+                />
+              ) : (
+                (name || "S").charAt(0).toUpperCase()
+              )}
+            </div>
+
+            <label
+              htmlFor="profile-picture-upload"
+              className="absolute -bottom-1 -right-1 flex h-9 w-9 cursor-pointer items-center justify-center rounded-full border-[3px] border-white bg-[#10163b] text-white shadow-sm transition hover:bg-[#6425ed]"
+              title="Change profile picture"
+            >
+              <Pencil size={14} />
+            </label>
+
+            <input
+              id="profile-picture-upload"
+              type="file"
+              accept="image/*"
+              onChange={handleProfileImageChange}
+              className="hidden"
+            />
+          </div>
+
+          <label
+            htmlFor="profile-picture-upload"
+            className="mt-3 cursor-pointer text-[10px] font-semibold text-[#6425ed] hover:underline"
+          >
+            Change Profile Picture
+          </label>
+
+          <p className="mt-1 text-[9px] text-[#8b92aa]">
+            JPG, PNG or WEBP · Max 5MB
+          </p>
+        </div>
+
         <div className="mt-6 space-y-4">
-          <InputField label="Full Name" value={name} onChange={setName} />
-          <InputField label="College" value={college} onChange={setCollege} />
-          <InputField label="Course" value={course} onChange={setCourse} />
-          <InputField label="Target" value={target} onChange={setTarget} />
+          <InputField
+            label="Full Name"
+            value={name}
+            onChange={setName}
+          />
+
+          <InputField
+            label="College"
+            value={college}
+            onChange={setCollege}
+          />
+
+          <InputField
+            label="Course"
+            value={course}
+            onChange={setCourse}
+          />
+
+          <InputField
+            label="Target"
+            value={target}
+            onChange={setTarget}
+          />
         </div>
 
         <button

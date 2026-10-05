@@ -24,6 +24,9 @@ function Navbar({
   onAI,
   onProfile,
   onRoadmaps,
+  onTarget,
+  onPYQ,
+  onLeaderboard,
   activePage = "home",
 }) {
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -42,7 +45,7 @@ function Navbar({
     {
       label: "PYQs",
       icon: FileText,
-      page: "pyqs",
+      page: "pyq",
     },
     {
       label: "Mock Tests",
@@ -74,6 +77,7 @@ function Navbar({
   // =========================
   // NAVIGATION
   // =========================
+
   const handleNavigation = (page) => {
     setMobileOpen(false);
 
@@ -81,6 +85,15 @@ function Navbar({
     if (page === "home") {
       if (onHome) {
         onHome();
+      }
+
+      return;
+    }
+
+    // PYQ
+    if (page === "pyq") {
+      if (onPYQ) {
+        onPYQ();
       }
 
       return;
@@ -113,6 +126,24 @@ function Navbar({
       return;
     }
 
+    // LEADERBOARD
+    if (page === "leaderboard") {
+      if (onLeaderboard) {
+        onLeaderboard();
+      }
+
+      return;
+    }
+
+    // TARGET
+    if (page === "target") {
+      if (onTarget) {
+        onTarget();
+      }
+
+      return;
+    }
+
     // PROFILE
     if (page === "profile") {
       if (onProfile) {
@@ -129,6 +160,7 @@ function Navbar({
   // =========================
   // LOGOUT
   // =========================
+
   const handleLogout = () => {
     setMobileOpen(false);
 

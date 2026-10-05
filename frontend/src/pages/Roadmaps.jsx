@@ -689,11 +689,16 @@ function MilestoneCard({
 ========================================================= */
 
 function Roadmaps({
+  onBack,
   onLogout,
+  profileRefreshKey,
   onHome,
   onMockTests,
   onAI,
   onProfile,
+  onRoadmaps,
+  onTarget,
+  onPYQ,
 }) {
   const [form, setForm] = useState({
     learning: "",
@@ -914,12 +919,15 @@ function Roadmaps({
           NAVBAR
       ===================================================== */}
 
-      <Navbar
-        onLogout={onLogout}
-        onHome={onHome}
-        onMockTests={onMockTests}
-        onAI={onAI}
-        onProfile={onProfile}
+<Navbar
+  onLogout={onLogout}
+  onHome={onHome}
+  onMockTests={onMockTests}
+  onAI={onAI}
+  onProfile={onProfile}
+  onRoadmaps={onRoadmaps}
+  onTarget={onTarget}
+  onPYQ={onPYQ}
         activePage="roadmaps"
       />
 

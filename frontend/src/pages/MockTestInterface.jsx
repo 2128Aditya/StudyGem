@@ -1,7 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
 
-
-
 import {
 
   ArrowLeft,
@@ -30,17 +28,11 @@ import {
 
 } from "lucide-react";
 
-
-
 import Navbar from "../components/Navbar";
-
-
 
 const formatTime = (seconds) => {
 
   const safe = Math.max(0, seconds);
-
-
 
   const hours = Math.floor(safe / 3600)
 
@@ -48,23 +40,17 @@ const formatTime = (seconds) => {
 
     .padStart(2, "0");
 
-
-
   const minutes = Math.floor((safe % 3600) / 60)
 
     .toString()
 
     .padStart(2, "0");
 
-
-
   const secs = (safe % 60)
 
     .toString()
 
     .padStart(2, "0");
-
-
 
   return {
 
@@ -78,8 +64,6 @@ const formatTime = (seconds) => {
 
 };
 
-
-
 function MockTestInterface({
 
   testConfig,
@@ -91,7 +75,9 @@ function MockTestInterface({
   onHome,
 
   onBack,
+
   onFinishTest,
+
 }) {
 
   const count = Array.isArray(testConfig?.questions)
@@ -100,21 +86,17 @@ function MockTestInterface({
 
     : Number(testConfig?.questionCount) || 0;
 
-
-
   const totalTime =
 
-    count >= 100
+    count>= 100
 
       ? 180 * 60
 
-      : count >= 50
+      : count>= 50
 
         ? 120 * 60
 
         : 60 * 60;
-
-
 
   const [timeLeft, setTimeLeft] = useState(totalTime);
 
@@ -130,8 +112,6 @@ function MockTestInterface({
 
   const [showEnd, setShowEnd] = useState(false);
 
-
-
   const questions = useMemo(() => {
 
     if (!Array.isArray(testConfig?.questions)) {
@@ -139,8 +119,6 @@ function MockTestInterface({
       return [];
 
     }
-
-
 
     return testConfig.questions.map((item, index) => ({
 
@@ -166,29 +144,19 @@ function MockTestInterface({
 
   }, [testConfig]);
 
-
-
   const question = questions[current];
-
-
 
   const answeredCount = Object.keys(answers).length;
 
-
-
   const progress =
 
-    count > 0
+    count> 0
 
       ? Math.round((answeredCount / count) * 100)
 
       : 0;
 
-
-
   const timer = formatTime(timeLeft);
-
-
 
   useEffect(() => {
 
@@ -198,29 +166,21 @@ function MockTestInterface({
 
     }
 
-
-
     const timerId = window.setInterval(() => {
 
       setTimeLeft((value) => Math.max(0, value - 1));
 
     }, 1000);
 
-
-
     return () => window.clearInterval(timerId);
 
   }, [paused, timeLeft]);
-
-
 
   useEffect(() => {
 
     setVisited((old) => new Set([...old, current]));
 
   }, [current]);
-
-
 
   const selectAnswer = (optionIndex) => {
 
@@ -234,23 +194,17 @@ function MockTestInterface({
 
   };
 
-
-
   const goTo = (index) => {
 
-    if (index < 0 || index >= count) {
+    if (index < 0 || index>= count) {
 
       return;
 
     }
 
-
-
     setCurrent(index);
 
   };
-
-
 
   const clearAnswer = () => {
 
@@ -258,11 +212,7 @@ function MockTestInterface({
 
       const next = { ...old };
 
-
-
       delete next[current];
-
-
 
       return next;
 
@@ -270,15 +220,11 @@ function MockTestInterface({
 
   };
 
-
-
   const toggleMark = () => {
 
     setMarked((old) => {
 
       const next = new Set(old);
-
-
 
       if (next.has(current)) {
 
@@ -290,43 +236,35 @@ function MockTestInterface({
 
       }
 
-
-
       return next;
 
     });
 
   };
 
-
-
-  /*
-
-   * Safety guard:
-
-   * If AI questions are not available, don't crash the page.
-
-   */
-
   const finishTest = () => {
-    if (!onFinishTest) {
-      console.error("onFinishTest prop is missing.");
-      return;
-    }
 
-    onFinishTest({
-      testConfig,
-      questions,
+    setShowEnd(false);
+
+    onFinishTest?.({
+
       answers,
-       timeTakenSeconds: totalTime - timeLeft,
+
+      marked: Array.from(marked),
+
+      timeLeft,
+
+      questions,
+
     });
+
   };
 
   if (!question) {
 
     return (
 
-      <div className="min-h-screen w-full bg-[#f5f3ff] text-[#11183b]">
+      <div className="min-h-screen bg-slate-50 font-[Verdana,sans-serif] text-slate-900">
 
         <Navbar
 
@@ -336,55 +274,43 @@ function MockTestInterface({
 
           onHome={onHome}
 
-          activePage="mock"
-
         />
 
+        <main className="mx-auto flex min-h-[calc(100vh-72px)] w-full max-w-7xl items-center justify-center px-4 py-8 sm:px-6 lg:px-8">
 
+          <div className="w-full max-w-2xl rounded-2xl border border-slate-200 bg-white p-8 text-center shadow-[0_10px_35px_rgba(15,23,42,0.06)] sm:p-10">
 
-        <main className="flex min-h-screen items-center justify-center px-4 pt-[88px]">
+            <div className="mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-xl bg-slate-100 text-slate-500">
 
-          <div className="w-full max-w-[500px] rounded-[25px] border border-white bg-white p-8 text-center shadow-[0_15px_50px_rgba(83,52,180,0.10)]">
-
-            <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-[#eee7ff] text-[#6425ed]">
-
-              <FileText size={32} />
+              <FileText className="h-7 w-7" />
 
             </div>
 
-
-
-            <h1 className="mt-5 text-2xl font-black text-[#10163b]">
+            <h1 className="text-2xl font-normal tracking-tight text-slate-900 sm:text-3xl">
 
               No Questions Available
 
             </h1>
 
+            <p className="mx-auto mt-3 max-w-md text-sm font-normal leading-6 text-slate-500">
 
-
-            <p className="mt-2 text-sm font-medium leading-6 text-[#697399]">
-
-              The mock test questions could not be loaded.
-
-              Please generate the mock test again.
+              There are no questions available for this mock test right now.
 
             </p>
-
-
 
             <button
 
               type="button"
 
-              onClick={() => onBack?.()}
+              onClick={onBack}
 
-              className="mt-6 inline-flex h-11 items-center justify-center gap-2 rounded-full bg-gradient-to-r from-[#6f22f4] to-[#5424e8] px-6 text-sm font-bold text-white shadow-[0_9px_22px_rgba(101,38,237,0.22)]"
+              className="mt-7 inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-5 py-3 text-sm font-normal text-slate-700 shadow-sm transition hover:border-slate-300 hover:bg-slate-50"
 
-            >
+           >
 
-              <ArrowLeft size={18} />
+              <ArrowLeft className="h-4 w-4" />
 
-              Back to Mock Tests
+              Go Back
 
             </button>
 
@@ -398,11 +324,9 @@ function MockTestInterface({
 
   }
 
-
-
   return (
 
-    <div className="min-h-screen w-full overflow-x-hidden bg-[#f5f3ff] text-[#11183b]">
+    <div className="min-h-screen bg-[#f7f8fc] font-[Verdana,sans-serif] text-slate-900">
 
       <Navbar
 
@@ -412,720 +336,701 @@ function MockTestInterface({
 
         onHome={onHome}
 
-        activePage="mock"
-
       />
 
+      <main className="mx-auto w-full max-w-[1500px] px-4 pt-20 pb-5 sm:px-6 lg:px-8 lg:pt-20 lg:pb-6">
 
+        <div className="mb-5 rounded-2xl border border-slate-200/90 bg-white px-5 py-4 shadow-[0_8px_30px_rgba(15,23,42,0.045)] sm:px-6">
 
-      <main className="min-h-screen bg-[radial-gradient(circle_at_10%_30%,rgba(128,89,255,0.10),transparent_28%),radial-gradient(circle_at_90%_80%,rgba(150,122,255,0.14),transparent_30%)] px-3 pb-6 pt-[88px] sm:px-5 lg:px-7 lg:pt-[96px]">
-
-        <div className="mx-auto max-w-[1480px]">
-
-          <div className="grid grid-cols-1 gap-5 xl:grid-cols-[minmax(0,1fr)_390px]">
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
 
             <div className="min-w-0">
 
-              <section className="relative overflow-hidden rounded-[25px] border border-white bg-white/90 px-5 py-5 shadow-[0_15px_50px_rgba(83,52,180,0.10)] backdrop-blur-xl sm:px-7 sm:py-6">
+              <div className="mb-2 flex flex-wrap items-center gap-2 text-xs font-normal text-slate-500">
 
-                <div className="relative z-10 flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
+                <span className="rounded-lg bg-slate-100 px-2.5 py-1">
 
-                  <div className="flex min-w-0 items-center gap-4">
+                  {testConfig.exam || "Mock Test"}
 
-                    <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-[#eee7ff] text-[#6425ed] sm:h-20 sm:w-20">
+                </span>
 
-                      <FileText size={38} strokeWidth={1.8} />
+                <span className="text-slate-300">/</span>
 
-                    </div>
+                <span>
 
+                  {testConfig.subject || testConfig.topic || "General"}
 
+                </span>
 
-                    <div className="min-w-0">
+              </div>
 
-                      <h1 className="truncate text-2xl font-black tracking-[-0.03em] text-[#10163b] sm:text-[29px]">
+              <h1 className="text-xl font-normal tracking-tight text-slate-900 sm:text-2xl">
 
-                        {testConfig?.exam
+                {testConfig.title ||
 
-                          ? `${testConfig.exam} Mock Test`
+                  testConfig.name ||
 
-                          : "Full Syllabus Mock Test - 01"}
+                  `${testConfig.exam} Mock Test`}
 
-                      </h1>
+              </h1>
 
+              <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-2 text-sm font-normal text-slate-500">
 
+                <InfoChip icon={<FileText className="h-4 w-4" />}>
 
-                      <p className="mt-1 text-sm font-semibold text-[#697399]">
+                  {count} Questions
 
-                        {testConfig?.exam || "UPSC Civil Services"}{" "}
+                </InfoChip>
 
-                        ·{" "}
+                <InfoChip icon={<Clock3 className="h-4 w-4" />}>
 
-                        {testConfig?.subjects?.join(", ") ||
+                  {count>= 100 ? "180 min" : count>= 50 ? "120 min" : "60 min"}
 
-                          "General Studies"}
+                </InfoChip>
 
-                      </p>
+                <InfoChip icon={<Check className="h-4 w-4" />}>
 
+                  {answeredCount} Answered
 
+                </InfoChip>
 
-                      <div className="mt-4 flex flex-wrap gap-2">
-
-                        <InfoChip>
-
-                          {count} Questions
-
-                        </InfoChip>
-
-
-
-                        <InfoChip>
-
-                          {Math.floor(totalTime / 60)} Minutes
-
-                        </InfoChip>
-
-
-
-                        <InfoChip>+4 Mark</InfoChip>
-
-
-
-                        <InfoChip>-1 Mark</InfoChip>
-
-
-
-                        <InfoChip>
-
-                          Multiple Choice
-
-                        </InfoChip>
-
-                      </div>
-
-                    </div>
-
-                  </div>
-
-                </div>
-
-              </section>
-
-
-
-              <section className="mt-5 rounded-[25px] border border-white bg-white/95 p-5 shadow-[0_15px_50px_rgba(83,52,180,0.10)] sm:p-8">
-
-                <div className="flex flex-wrap items-center justify-between gap-3">
-
-                  <div className="flex items-center gap-3">
-
-                    <span className="text-sm font-bold text-[#667093]">
-
-                      Question {current + 1} of {count}
-
-                    </span>
-
-
-
-                    <span className="rounded-full bg-[#eee7ff] px-3 py-1.5 text-[11px] font-bold text-[#6425ed]">
-
-                      {question.topic}
-
-                    </span>
-
-                  </div>
-
-
-
-                  <div className="flex items-center gap-3">
-
-                    <button
-
-                      type="button"
-
-                      onClick={toggleMark}
-
-                      className={`inline-flex items-center gap-1.5 text-sm font-semibold ${
-
-                        marked.has(current)
-
-                          ? "text-[#6425ed]"
-
-                          : "text-[#697399]"
-
-                      }`}
-
-                    >
-
-                      <Bookmark
-
-                        size={18}
-
-                        fill={
-
-                          marked.has(current)
-
-                            ? "currentColor"
-
-                            : "none"
-
-                        }
-
-                      />
-
-
-
-                      <span className="hidden sm:inline">
-
-                        Bookmark
-
-                      </span>
-
-                    </button>
-
-
-
-                    <button
-
-                      type="button"
-
-                      className="inline-flex items-center gap-1.5 text-sm font-semibold text-[#697399]"
-
-                    >
-
-                      <Flag size={18} />
-
-
-
-                      <span className="hidden sm:inline">
-
-                        Report
-
-                      </span>
-
-                    </button>
-
-                  </div>
-
-                </div>
-
-
-
-                <h2 className="mt-7 max-w-[980px] text-[20px] font-extrabold leading-[1.45] tracking-[-0.02em] text-[#10163b] sm:text-[25px]">
-
-                  {question.question}
-
-                </h2>
-
-
-
-                <div className="mt-7 space-y-3.5">
-
-                  {question.options.map((option, index) => {
-
-                    const selected =
-
-                      answers[current] === index;
-
-
-
-                    const letter = String.fromCharCode(
-
-                      65 + index
-
-                    );
-
-
-
-                    return (
-
-                      <button
-
-                        type="button"
-
-                        key={`${question.id}-${index}`}
-
-                        onClick={() => selectAnswer(index)}
-
-                        className={`flex w-full items-center gap-4 rounded-2xl border px-4 py-4 text-left transition-all sm:px-5 sm:py-4 ${
-
-                          selected
-
-                            ? "border-[#6d28f0] bg-[#f2ebff] shadow-[0_7px_24px_rgba(109,40,240,0.10)]"
-
-                            : "border-[#e0e3f1] bg-white hover:border-[#cfc3ff] hover:bg-[#fbfaff]"
-
-                        }`}
-
-                      >
-
-                        <span
-
-                          className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-base font-extrabold ${
-
-                            selected
-
-                              ? "bg-[#6d28f0] text-white"
-
-                              : "bg-[#e9ecf5] text-[#1e2545]"
-
-                          }`}
-
-                        >
-
-                          {letter}
-
-                        </span>
-
-
-
-                        <span
-
-                          className={`text-[16px] font-semibold ${
-
-                            selected
-
-                              ? "text-[#6425ed]"
-
-                              : "text-[#1c2445]"
-
-                          }`}
-
-                        >
-
-                          {option}
-
-                        </span>
-
-
-
-                        {selected && (
-
-                          <Check
-
-                            className="ml-auto text-[#6425ed]"
-
-                            size={20}
-
-                          />
-
-                        )}
-
-                      </button>
-
-                    );
-
-                  })}
-
-                </div>
-
-
-
-                <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-
-                  <button
-
-                    type="button"
-
-                    onClick={clearAnswer}
-
-                    className="inline-flex h-11 items-center justify-center gap-2 rounded-full border border-[#e1e3f0] bg-white px-5 text-sm font-bold text-[#626b8b] transition hover:border-[#cfc3ff] hover:text-[#6425ed]"
-
-                  >
-
-                    <RotateCcw size={17} />
-
-                    Clear Answer
-
-                  </button>
-
-
-
-                  <div className="flex gap-2 sm:gap-3">
-
-<button
-
-  type="button"
-
-  onClick={() => {
-
-    if (current === count - 1) {
-
-      finishTest();
-
-      return;
-
-    }
-
-
-
-    goTo(current + 1);
-
-  }}
-
-  className="inline-flex h-11 min-w-[132px] items-center justify-center gap-2 rounded-full bg-gradient-to-r from-[#6f22f4] to-[#5424e8] px-6 text-sm font-bold text-white shadow-[0_9px_22px_rgba(101,38,237,0.22)] transition hover:-translate-y-0.5"
-
->
-
-  {current === count - 1 ? "Submit Test" : "Next"}
-
-
-
-  {current === count - 1 ? (
-
-    <Check size={18} />
-
-  ) : (
-
-    <ArrowRight size={18} />
-
-  )}
-
-</button>
-
-                  </div>
-
-                </div>
-
-              </section>
+              </div>
 
             </div>
 
+            <div className="flex flex-wrap items-center gap-2">
 
+              <button
 
-            <aside className="space-y-5 xl:sticky xl:top-[92px] xl:self-start">
+                type="button"
 
-              <section className="rounded-[25px] border border-white bg-white/95 p-5 shadow-[0_15px_50px_rgba(83,52,180,0.10)]">
+                onClick={onBack}
 
-                <div className="flex items-center justify-between gap-3">
+                className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-normal text-slate-600 shadow-sm transition hover:border-slate-300 hover:bg-slate-50"
 
-                  <div className="flex items-center gap-3">
+             >
 
-                    <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#eee7ff] text-[#6425ed]">
+                <ArrowLeft className="h-4 w-4" />
 
-                      <Clock3 size={22} />
+                Back
 
-                    </span>
+              </button>
 
+              <button
 
+                type="button"
 
-                    <h2 className="text-[18px] font-extrabold">
+                onClick={toggleMark}
 
-                      Time Left
+                className={`inline-flex items-center gap-2 rounded-xl border px-4 py-2.5 text-sm font-normal transition ${
 
-                    </h2>
+                  marked.has(current)
 
-                  </div>
+                    ? "border-amber-200 bg-amber-50 text-amber-700"
 
+                    : "border-slate-200 bg-white text-slate-600 shadow-sm hover:border-slate-300 hover:bg-slate-50"
 
+                }`}
 
-                  <button
+             >
 
-                    type="button"
+                <Bookmark
 
-                    onClick={() =>
+                  className={`h-4 w-4 ${marked.has(current) ? "fill-current" : ""}`}
 
-                      setPaused((value) => !value)
+                />
 
-                    }
+                {marked.has(current) ? "Marked" : "Mark"}
 
-                    className="inline-flex items-center gap-1.5 rounded-full border border-[#e5e5f1] bg-white px-3 py-2 text-xs font-bold text-[#5f6786]"
+              </button>
 
-                  >
-
-                    {paused ? (
-
-                      <Play size={14} />
-
-                    ) : (
-
-                      <Pause size={14} />
-
-                    )}
-
-
-
-                    {paused ? "Resume" : "Pause"}
-
-                  </button>
-
-                </div>
-
-
-
-                <div className="mt-5 flex items-center justify-between gap-3">
-
-                  <div>
-
-                    <div className="text-3xl font-black tracking-[0.06em] text-[#11183b] sm:text-[35px]">
-
-                      {timer.hours} : {timer.minutes} :{" "}
-
-                      {timer.secs}
-
-                    </div>
-
-
-
-                    <div className="mt-1 flex gap-6 pl-1 text-[9px] font-semibold uppercase tracking-wide text-[#747d9c]">
-
-                      <span>Hours</span>
-
-                      <span>Minutes</span>
-
-                      <span>Seconds</span>
-
-                    </div>
-
-                  </div>
-
-
-
-                  <button
-
-                    type="button"
-
-                    onClick={() => setShowEnd(true)}
-
-                    className="inline-flex h-11 items-center gap-2 rounded-xl bg-[#ffe9ef] px-4 text-sm font-bold text-[#e34c68]"
-
-                  >
-
-                    <Square size={15} fill="currentColor" />
-
-                    End Test
-
-                  </button>
-
-                </div>
-
-
-
-                <div className="mt-5 h-2 overflow-hidden rounded-full bg-[#e9e5f7]">
-
-                  <div
-
-                    className="h-full rounded-full bg-gradient-to-r from-[#7625f4] to-[#5526eb] transition-all"
-
-                    style={{
-
-                      width: `${progress}%`,
-
-                    }}
-
-                  />
-
-                </div>
-
-
-
-                <div className="mt-2 flex justify-between text-xs font-bold text-[#687193]">
-
-                  <span>
-
-                    {answeredCount}/{count} answered
-
-                  </span>
-
-
-
-                  <span className="text-[#6425ed]">
-
-                    {progress}%
-
-                  </span>
-
-                </div>
-
-              </section>
-
-
-
-              <section className="rounded-[25px] border border-white bg-white/95 p-5 shadow-[0_15px_50px_rgba(83,52,180,0.10)]">
-
-                <h2 className="text-[18px] font-extrabold">
-
-                  Question Palette
-
-                </h2>
-
-
-
-                <div className="mt-4 grid grid-cols-2 gap-2 text-[10px] font-semibold text-[#687193] sm:grid-cols-4 xl:grid-cols-2 2xl:grid-cols-4">
-
-                  <Legend
-
-                    color="bg-emerald-400"
-
-                    label="Answered"
-
-                  />
-
-
-
-                  <Legend
-
-                    color="bg-[#6d28f0]"
-
-                    label="Current"
-
-                  />
-
-
-
-                  <Legend
-
-                    color="bg-[#e8eaf2]"
-
-                    label="Not Visited"
-
-                  />
-
-
-
-                  <Legend
-
-                    color="bg-[#ff9eb8]"
-
-                    label="Marked"
-
-                  />
-
-                </div>
-
-
-
-                <div className="mt-5 grid grid-cols-10 gap-1.5 sm:gap-2">
-
-                  {questions.map((item, index) => {
-
-                    const isCurrent =
-
-                      current === index;
-
-
-
-                    const isAnswered =
-
-                      Object.prototype.hasOwnProperty.call(
-
-                        answers,
-
-                        index
-
-                      );
-
-
-
-                    const isMarked =
-
-                      marked.has(index);
-
-
-
-                    const isVisited =
-
-                      visited.has(index);
-
-
-
-                    let tone =
-
-                      "bg-[#eef0f6] text-[#222945]";
-
-
-
-                    if (isMarked) {
-
-                      tone =
-
-                        "bg-[#ffb1c5] text-[#a43c59]";
-
-                    } else if (isCurrent) {
-
-                      tone =
-
-                        "bg-[#6d28f0] text-white shadow-md";
-
-                    } else if (isAnswered) {
-
-                      tone =
-
-                        "bg-[#c9f3df] text-[#176b4a]";
-
-                    } else if (isVisited) {
-
-                      tone =
-
-                        "bg-[#f1f2f8] text-[#333a55]";
-
-                    }
-
-
-
-                    return (
-
-                      <button
-
-                        key={item.id}
-
-                        type="button"
-
-                        onClick={() => goTo(index)}
-
-                        className={`aspect-square rounded-lg text-[10px] font-bold transition hover:scale-105 sm:text-[11px] ${tone}`}
-
-                      >
-
-                        {index + 1}
-
-                      </button>
-
-                    );
-
-                  })}
-
-                </div>
-
-              </section>
-
-            </aside>
+            </div>
 
           </div>
 
         </div>
 
-      </main>
+        <div className="grid grid-cols-1 gap-5 xl:grid-cols-[minmax(0,1fr)_350px]">
 
+          <section className="min-w-0">
 
+            <div className="rounded-2xl border border-slate-200/90 bg-white shadow-[0_8px_30px_rgba(15,23,42,0.045)]">
 
-      {showEnd && (
+              <div className="border-b border-slate-100 px-5 py-4 sm:px-7">
 
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-[#11152f]/35 px-4 backdrop-blur-sm">
+                <div className="flex flex-wrap items-center justify-between gap-3">
 
-          <div className="w-full max-w-[420px] rounded-3xl bg-white p-6 shadow-2xl">
+                  <div>
 
-            <div className="flex items-start justify-between">
+                    <p className="text-xs font-normal uppercase tracking-[0.08em] text-slate-400">
 
-              <div>
+                      Question {current + 1} of {count}
 
-                <h3 className="text-xl font-extrabold text-[#11183b]">
+                    </p>
 
-                  End Test?
+                    <p className="mt-1 text-sm font-normal text-slate-500">
 
-                </h3>
+                      {question.topic || "General"}
 
+                    </p>
 
+                  </div>
 
-                <p className="mt-2 text-sm leading-6 text-[#687193]">
+                  <div className="flex items-center gap-2">
 
-                  Your current answers will be submitted and
-                  your result will be calculated.
+                    {marked.has(current) && (
 
-                </p>
+                      <span className="inline-flex items-center gap-1.5 rounded-lg bg-amber-50 px-2.5 py-1.5 text-xs font-normal text-amber-700">
+
+                        <Bookmark className="h-3.5 w-3.5 fill-current" />
+
+                        Marked
+
+                      </span>
+
+                    )}
+
+                    {visited.has(current) && (
+
+                      <span className="rounded-lg bg-slate-100 px-2.5 py-1.5 text-xs font-normal text-slate-500">
+
+                        Visited
+
+                      </span>
+
+                    )}
+
+                  </div>
+
+                </div>
 
               </div>
 
+              <div className="px-5 py-6 sm:px-7 sm:py-8">
 
+                <div className="max-w-4xl">
+
+                  <h2 className="text-[18px] font-normal leading-7 tracking-tight text-slate-900 sm:text-[20px] sm:leading-8">
+
+                    {question.question || question.text || "Question"}
+
+                  </h2>
+
+                  {question.description && (
+
+                    <p className="mt-3 text-sm font-normal leading-6 text-slate-500">
+
+                      {question.description}
+
+                    </p>
+
+                  )}
+
+                  <div className="mt-7 space-y-3">
+
+                    {question.options.map((option, index) => {
+
+                      const selected = answers[current] === index;
+
+                      return (
+
+                        <button
+
+                          key={`${question.id}-${index}`}
+
+                          type="button"
+
+                          onClick={() => selectAnswer(index)}
+
+                          className={`flex w-full items-center gap-4 rounded-xl border px-4 py-4 text-left transition-all sm:px-5 sm:py-4 ${
+
+                            selected
+
+                              ? "border-violet-300 bg-violet-50/70 shadow-[0_4px_14px_rgba(124,58,237,0.08)]"
+
+                              : "border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50/70"
+
+                          }`}
+
+                       >
+
+                          <span
+
+                            className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-base font-normal ${
+
+                              selected
+
+                                ? "bg-violet-600 text-white"
+
+                                : "border border-slate-200 bg-slate-50 text-slate-600"
+
+                            }`}
+
+                         >
+
+                            {String.fromCharCode(65 + index)}
+
+                          </span>
+
+                          <span
+
+                            className={`text-[16px] font-normal leading-6 ${
+
+                              selected ? "text-violet-900" : "text-slate-700"
+
+                            }`}
+
+                         >
+
+                            {option}
+
+                          </span>
+
+                          {selected && (
+
+                            <span className="ml-auto flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-violet-600 text-white">
+
+                              <Check className="h-3.5 w-3.5" />
+
+                            </span>
+
+                          )}
+
+                        </button>
+
+                      );
+
+                    })}
+
+                  </div>
+
+                </div>
+
+              </div>
+
+              <div className="flex flex-col gap-3 border-t border-slate-100 px-5 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-7">
+
+                <button
+
+                  type="button"
+
+                  onClick={clearAnswer}
+
+                  disabled={answers[current] === undefined}
+
+                  className="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-normal text-slate-600 transition hover:border-slate-300 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40"
+
+               >
+
+                  <RotateCcw className="h-4 w-4" />
+
+                  Clear Answer
+
+                </button>
+
+                <div className="flex items-center gap-2">
+
+                  <button
+
+                    type="button"
+
+                    onClick={() => goTo(current - 1)}
+
+                    disabled={current === 0}
+
+                    className="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-normal text-slate-600 transition hover:border-slate-300 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40"
+
+                 >
+
+                    <ArrowLeft className="h-4 w-4" />
+
+                    Previous
+
+                  </button>
+
+                  <button
+
+                    type="button"
+
+                    onClick={() => goTo(current + 1)}
+
+                    disabled={current === count - 1}
+
+                    className="inline-flex items-center justify-center gap-2 rounded-xl bg-violet-600 px-5 py-2.5 text-sm font-normal text-white shadow-sm transition hover:bg-violet-700 disabled:cursor-not-allowed disabled:opacity-40"
+
+                 >
+
+                    Next
+
+                    <ArrowRight className="h-4 w-4" />
+
+                  </button>
+
+                </div>
+
+              </div>
+
+            </div>
+
+          </section>
+
+          <aside className="space-y-5 xl:sticky xl:top-[92px] xl:self-start">
+
+            <section className="rounded-2xl border border-slate-200/90 bg-white p-5 shadow-[0_8px_30px_rgba(15,23,42,0.045)]">
+
+              <div className="flex items-center justify-between gap-3">
+
+                <div className="flex items-center gap-3">
+
+                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-violet-50 text-violet-600">
+
+                    <Clock3 className="h-5 w-5" />
+
+                  </div>
+
+                  <div>
+
+                    <h2 className="text-base font-normal text-slate-900">
+
+                      Time Left
+
+                    </h2>
+
+                    <p className="mt-0.5 text-xs font-normal text-slate-400">
+
+                      Keep an eye on your time
+
+                    </p>
+
+                  </div>
+
+                </div>
+
+                <button
+
+                  type="button"
+
+                  onClick={() => setPaused((value) => !value)}
+
+                  className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-normal text-slate-600 shadow-sm transition hover:border-slate-300 hover:bg-slate-50"
+
+               >
+
+                  {paused ? (
+
+                    <Play className="h-3.5 w-3.5" />
+
+                  ) : (
+
+                    <Pause className="h-3.5 w-3.5" />
+
+                  )}
+
+                  {paused ? "Resume" : "Pause"}
+
+                </button>
+
+              </div>
+
+              <div className="mt-5 rounded-xl border border-slate-100 bg-slate-50/80 px-4 py-5 text-center">
+
+                <div className="flex items-center justify-center gap-1.5 font-[Verdana,sans-serif]">
+
+                  <span className="text-3xl font-normal tracking-wide text-slate-900">
+
+                    {timer.hours}
+
+                  </span>
+
+                  <span className="pb-1 text-xl font-normal text-slate-300">
+
+                    :
+
+                  </span>
+
+                  <span className="text-3xl font-normal tracking-wide text-slate-900">
+
+                    {timer.minutes}
+
+                  </span>
+
+                  <span className="pb-1 text-xl font-normal text-slate-300">
+
+                    :
+
+                  </span>
+
+                  <span className="text-3xl font-normal tracking-wide text-slate-900">
+
+                    {timer.secs}
+
+                  </span>
+
+                </div>
+
+                <div className="mt-2 flex justify-center gap-7 text-[10px] font-normal uppercase tracking-[0.08em] text-slate-400">
+
+                  <span>Hours</span>
+
+                  <span>Minutes</span>
+
+                  <span>Seconds</span>
+
+                </div>
+
+              </div>
+
+              <button
+
+                type="button"
+
+                onClick={() => setShowEnd(true)}
+
+                className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-xl border border-red-100 bg-red-50 px-4 py-3 text-sm font-normal text-red-600 transition hover:border-red-200 hover:bg-red-100"
+
+             >
+
+                <Square className="h-4 w-4" />
+
+                End Test
+
+              </button>
+
+            </section>
+
+            <section className="rounded-2xl border border-slate-200/90 bg-white p-5 shadow-[0_8px_30px_rgba(15,23,42,0.045)]">
+
+              <div className="flex items-center justify-between">
+
+                <div>
+
+                  <h2 className="text-base font-normal text-slate-900">
+
+                    Your Progress
+
+                  </h2>
+
+                  <p className="mt-1 text-xs font-normal text-slate-400">
+
+                    Questions answered
+
+                  </p>
+
+                </div>
+
+                <span className="rounded-lg bg-violet-50 px-2.5 py-1.5 text-sm font-normal text-violet-700">
+
+                  {progress}%
+
+                </span>
+
+              </div>
+
+              <div className="mt-4 h-2 overflow-hidden rounded-full bg-slate-100">
+
+                <div
+
+                  className="h-full rounded-full bg-violet-600 transition-all duration-300"
+
+                  style={{
+
+                    width: `${progress}%`,
+
+                  }}
+
+                />
+
+              </div>
+
+              <div className="mt-3 flex items-center justify-between text-xs font-normal text-slate-400">
+
+                <span>{answeredCount} answered</span>
+
+                <span>{count - answeredCount} remaining</span>
+
+              </div>
+
+            </section>
+
+            <section className="rounded-2xl border border-slate-200/90 bg-white p-5 shadow-[0_8px_30px_rgba(15,23,42,0.045)]">
+
+              <div className="flex items-center justify-between gap-3">
+
+                <div>
+
+                  <h2 className="text-base font-normal text-slate-900">
+
+                    Question Palette
+
+                  </h2>
+
+                  <p className="mt-1 text-xs font-normal text-slate-400">
+
+                    Jump to any question
+
+                  </p>
+
+                </div>
+
+                <span className="rounded-lg bg-slate-100 px-2.5 py-1 text-xs font-normal text-slate-500">
+
+                  {current + 1}/{count}
+
+                </span>
+
+              </div>
+
+              <div className="mt-5 grid grid-cols-5 gap-2">
+
+                {questions.map((item, index) => {
+
+                  const isCurrent = current === index;
+
+                  const isAnswered = answers[index] !== undefined;
+
+                  const isMarked = marked.has(index);
+
+                  const isVisited = visited.has(index);
+
+                  let paletteClass =
+
+                    "border-slate-200 bg-white text-slate-500 hover:border-slate-300 hover:bg-slate-50";
+
+                  if (isCurrent) {
+
+                    paletteClass =
+
+                      "border-violet-600 bg-violet-600 text-white shadow-sm";
+
+                  } else if (isAnswered) {
+
+                    paletteClass =
+
+                      "border-emerald-200 bg-emerald-50 text-emerald-700";
+
+                  } else if (isMarked) {
+
+                    paletteClass =
+
+                      "border-amber-200 bg-amber-50 text-amber-700";
+
+                  } else if (isVisited) {
+
+                    paletteClass =
+
+                      "border-slate-200 bg-slate-100 text-slate-600";
+
+                  }
+
+                  return (
+
+                    <button
+
+                      key={item.id || index}
+
+                      type="button"
+
+                      onClick={() => goTo(index)}
+
+                      className={`relative flex h-10 items-center justify-center rounded-lg border text-sm font-normal transition ${paletteClass}`}
+
+                   >
+
+                      {index + 1}
+
+                      {isMarked && !isCurrent && (
+
+                        <span className="absolute -right-0.5 -top-0.5 h-2 w-2 rounded-full bg-amber-500" />
+
+                      )}
+
+                    </button>
+
+                  );
+
+                })}
+
+              </div>
+
+              <div className="mt-5 grid grid-cols-2 gap-2.5">
+
+                <Legend
+
+                  color="bg-violet-600"
+
+                  label="Current"
+
+                />
+
+                <Legend
+
+                  color="bg-emerald-500"
+
+                  label="Answered"
+
+                />
+
+                <Legend
+
+                  color="bg-slate-300"
+
+                  label="Visited"
+
+                />
+
+                <Legend
+
+                  color="bg-amber-400"
+
+                  label="Marked"
+
+                />
+
+              </div>
+
+            </section>
+
+          </aside>
+
+        </div>
+
+      </main>
+
+      {showEnd && (
+
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-950/45 px-4 backdrop-blur-[2px]">
+
+          <div className="w-full max-w-md rounded-2xl border border-slate-200 bg-white p-6 shadow-[0_25px_70px_rgba(15,23,42,0.18)] sm:p-7">
+
+            <div className="flex items-start justify-between gap-4">
+
+              <div className="flex items-start gap-3.5">
+
+                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-red-50 text-red-600">
+
+                  <Flag className="h-5 w-5" />
+
+                </div>
+
+                <div>
+
+                  <h2 className="text-lg font-normal text-slate-900">
+
+                    End Test?
+
+                  </h2>
+
+                  <p className="mt-1.5 text-sm font-normal leading-6 text-slate-500">
+
+                    Are you sure you want to end this test? Your current
+
+                    answers will be submitted.
+
+                  </p>
+
+                </div>
+
+              </div>
 
               <button
 
@@ -1133,19 +1038,53 @@ function MockTestInterface({
 
                 onClick={() => setShowEnd(false)}
 
-                className="rounded-full bg-[#f3f2f9] p-2 text-[#687193]"
+                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-slate-400 transition hover:bg-slate-100 hover:text-slate-600"
 
-              >
+             >
 
-                <X size={18} />
+                <X className="h-5 w-5" />
 
               </button>
 
             </div>
 
+            <div className="mt-5 grid grid-cols-2 gap-3">
 
+              <div className="rounded-xl border border-slate-100 bg-slate-50 p-4">
 
-            <div className="mt-6 flex gap-3">
+                <p className="text-xs font-normal text-slate-400">
+
+                  Answered
+
+                </p>
+
+                <p className="mt-1 text-xl font-normal text-slate-900">
+
+                  {answeredCount}
+
+                </p>
+
+              </div>
+
+              <div className="rounded-xl border border-slate-100 bg-slate-50 p-4">
+
+                <p className="text-xs font-normal text-slate-400">
+
+                  Remaining
+
+                </p>
+
+                <p className="mt-1 text-xl font-normal text-slate-900">
+
+                  {count - answeredCount}
+
+                </p>
+
+              </div>
+
+            </div>
+
+            <div className="mt-6 flex flex-col-reverse gap-2.5 sm:flex-row sm:justify-end">
 
               <button
 
@@ -1153,26 +1092,24 @@ function MockTestInterface({
 
                 onClick={() => setShowEnd(false)}
 
-                className="flex-1 rounded-xl border border-[#dedbea] py-3 text-sm font-bold text-[#5d6685]"
+                className="inline-flex items-center justify-center rounded-xl border border-slate-200 bg-white px-5 py-2.5 text-sm font-normal text-slate-600 transition hover:border-slate-300 hover:bg-slate-50"
 
-              >
+             >
 
                 Continue Test
 
               </button>
 
-
-
               <button
 
                 type="button"
 
-                onClick={() => {
-                  setShowEnd(false);
-                  finishTest();
-                }}
-                className="flex-1 rounded-xl bg-gradient-to-r from-[#6f22f4] to-[#5424e8] py-3 text-sm font-bold text-white"
-              >
+                onClick={finishTest}
+
+                className="inline-flex items-center justify-center rounded-xl bg-red-600 px-5 py-2.5 text-sm font-normal text-white shadow-sm transition hover:bg-red-700"
+
+             >
+
                 Submit Test
 
               </button>
@@ -1191,13 +1128,13 @@ function MockTestInterface({
 
 }
 
-
-
-function InfoChip({ children }) {
+function InfoChip({ icon, children }) {
 
   return (
 
-    <span className="rounded-full bg-[#f5f3fc] px-3 py-2 text-[10px] font-bold text-[#687193] sm:text-[11px]">
+    <span className="inline-flex items-center gap-1.5 rounded-lg bg-slate-100 px-2.5 py-1.5 text-xs font-normal text-slate-500">
+
+      {icon}
 
       {children}
 
@@ -1207,28 +1144,20 @@ function InfoChip({ children }) {
 
 }
 
-
-
 function Legend({ color, label }) {
 
   return (
 
-    <span className="flex items-center gap-1.5">
+    <div className="flex items-center gap-2 text-xs font-normal text-slate-500">
 
-      <span
+      <span className={`h-2.5 w-2.5 rounded-full ${color}`} />
 
-        className={`h-3 w-3 rounded-[4px] ${color}`}
+      <span>{label}</span>
 
-      />
-
-      {label}
-
-    </span>
+    </div>
 
   );
 
 }
-
-
 
 export default MockTestInterface;
