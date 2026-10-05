@@ -14,18 +14,26 @@ import {
 import Navbar from "../components/Navbar";
 import homeBg from "../assets/new.png";
 
-const Home = ({ onLogout, onMockTests }) => {
+const Home = ({
+ onLogout,
+  onMockTests,
+  onAI,
+  onProfile,
+  onRoadmaps,
+}) => {
   return (
     <div className="w-full min-h-screen bg-[#f8f6ff] overflow-x-hidden">
       {/* =========================
           NAVBAR
       ========================= */}
-      <Navbar
+<Navbar
   onLogout={onLogout}
   onMockTests={onMockTests}
+  onAI={onAI}
+  onProfile={onProfile}
+    onRoadmaps={onRoadmaps}
   activePage="home"
 />
-
       {/* =========================
           HERO
       ========================= */}

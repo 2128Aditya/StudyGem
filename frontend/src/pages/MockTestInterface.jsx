@@ -318,6 +318,7 @@ function MockTestInterface({
       testConfig,
       questions,
       answers,
+       timeTakenSeconds: totalTime - timeLeft,
     });
   };
 

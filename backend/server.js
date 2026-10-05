@@ -9,6 +9,10 @@ const cors = require("cors");
 const connectDB = require("./config/db");
 const authRoutes = require("./routes/authRoutes");
 const mockRoutes = require("./routes/mockRoutes");
+const mockAttemptRoutes = require("./routes/mockAttemptRoutes");
+const profileRoutes = require("./routes/profileRoutes");
+const aiRoutes = require("./routes/aiRoutes");
+const roadmapRoutes = require("./routes/roadmapRoutes");
 connectDB();
 
 const app = express();
@@ -18,7 +22,13 @@ app.use(express.json());
 
 app.use("/api/auth", authRoutes);
 app.use("/api/mock", mockRoutes);
-
+app.use(
+  "/api/mock",
+  mockAttemptRoutes
+);
+app.use("/api/ai", aiRoutes);
+app.use("/api/profile", profileRoutes);
+app.use("/api/roadmap", roadmapRoutes);
 app.get("/", (req, res) => {
   res.json({
     success: true,

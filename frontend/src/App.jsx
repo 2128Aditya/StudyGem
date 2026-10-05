@@ -4,9 +4,13 @@ import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import ForgotPassword from "./pages/ForgotPassword";
 import Home from "./pages/Home";
+import Profile from "./pages/Profile";
 import MockTests from "./pages/MockTests";
 import MockTestInterface from "./pages/MockTestInterface";
 import MockTestResult from "./pages/MockTestResult";
+import AIAssistant from "./pages/AIAssistant";
+import Roadmap from "./pages/Roadmaps";
+import Target from "./pages/Target";
 
 function App() {
   // =========================
@@ -49,10 +53,38 @@ function App() {
   };
 
   // =========================
-  // OPEN MOCK TEST CREATOR
+  // PROFILE
+  // =========================
+  const openProfile = () => {
+    setPage("profile");
+  };
+
+  // =========================
+  // AI ASSISTANT
+  // =========================
+  const openAI = () => {
+    setPage("ai");
+  };
+
+  // =========================
+  // MOCK TESTS
   // =========================
   const openMockTests = () => {
     setPage("mock-create");
+  };
+
+  // =========================
+  // ROADMAP
+  // =========================
+  const openRoadmaps = () => {
+    setPage("roadmaps");
+  };
+
+  // =========================
+  // TARGET
+  // =========================
+  const openTarget = () => {
+    setPage("target");
   };
 
   // =========================
@@ -68,10 +100,68 @@ function App() {
   // =========================
   // FINISH MOCK TEST
   // =========================
-  const finishMockTest = (resultData) => {
-    setTestResult(resultData);
+  const finishMockTest = async (resultData) => {
+    try {
+      const token = localStorage.getItem("studyGemToken");
 
-    setPage("mock-result");
+      if (!token) {
+        console.error("StudyGem token not found.");
+
+        setTestResult(resultData);
+        setPage("mock-result");
+
+        return;
+      }
+
+      const API_BASE_URL =
+        import.meta.env.VITE_API_URL ||
+        "http://localhost:5000/api";
+
+      const response = await fetch(
+        `${API_BASE_URL}/mock/attempt`,
+        {
+          method: "POST",
+
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+
+          body: JSON.stringify({
+            testConfig: resultData.testConfig,
+            questions: resultData.questions,
+            answers: resultData.answers,
+            timeTakenSeconds:
+              resultData.timeTakenSeconds || 0,
+          }),
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok || !data.success) {
+        console.error(
+          "Failed to save mock result:",
+          data.message || "Unknown error"
+        );
+      } else {
+        console.log(
+          "Mock test result saved successfully:",
+          data.attempt
+        );
+      }
+
+      setTestResult(resultData);
+      setPage("mock-result");
+    } catch (error) {
+      console.error(
+        "Mock Result Save Error:",
+        error
+      );
+
+      setTestResult(resultData);
+      setPage("mock-result");
+    }
   };
 
   // =========================
@@ -98,6 +188,7 @@ function App() {
 
   return (
     <div className="min-h-screen">
+
       {/* =====================================================
           LOGIN
       ===================================================== */}
@@ -133,7 +224,28 @@ function App() {
       {page === "home" && (
         <Home
           onLogout={handleLogout}
+          onHome={openHome}
           onMockTests={openMockTests}
+          onAI={openAI}
+          onProfile={openProfile}
+          onRoadmaps={openRoadmaps}
+          onTarget={openTarget}
+        />
+      )}
+
+      {/* =====================================================
+          PROFILE
+      ===================================================== */}
+      {page === "profile" && (
+        <Profile
+          onBack={openHome}
+          onLogout={handleLogout}
+          onHome={openHome}
+          onMockTests={openMockTests}
+          onAI={openAI}
+          onProfile={openProfile}
+          onRoadmaps={openRoadmaps}
+          onTarget={openTarget}
         />
       )}
 
@@ -143,8 +255,12 @@ function App() {
       {page === "mock-create" && (
         <MockTests
           onLogout={handleLogout}
-          onMockTests={openMockTests}
           onHome={openHome}
+          onMockTests={openMockTests}
+          onAI={openAI}
+          onProfile={openProfile}
+          onRoadmaps={openRoadmaps}
+          onTarget={openTarget}
           onStartTest={startMockTest}
         />
       )}
@@ -156,9 +272,13 @@ function App() {
         <MockTestInterface
           testConfig={testConfig}
           onLogout={handleLogout}
-          onMockTests={openMockTests}
           onHome={openHome}
+          onMockTests={openMockTests}
           onBack={openMockTests}
+          onAI={openAI}
+          onProfile={openProfile}
+          onRoadmaps={openRoadmaps}
+          onTarget={openTarget}
           onFinishTest={finishMockTest}
         />
       )}
@@ -175,6 +295,52 @@ function App() {
           onRetake={retakeMockTest}
         />
       )}
+
+      {/* =====================================================
+          AI ASSISTANT
+      ===================================================== */}
+      {page === "ai" && (
+        <AIAssistant
+          onLogout={handleLogout}
+          onHome={openHome}
+          onMockTests={openMockTests}
+          onAI={openAI}
+          onProfile={openProfile}
+          onRoadmaps={openRoadmaps}
+          onTarget={openTarget}
+        />
+      )}
+
+      {/* =====================================================
+          ROADMAP
+      ===================================================== */}
+      {page === "roadmaps" && (
+        <Roadmap
+          onLogout={handleLogout}
+          onHome={openHome}
+          onMockTests={openMockTests}
+          onAI={openAI}
+          onProfile={openProfile}
+          onRoadmaps={openRoadmaps}
+          onTarget={openTarget}
+        />
+      )}
+
+      {/* =====================================================
+          TARGET
+      ===================================================== */}
+      {page === "target" && (
+        <Target
+          onLogout={handleLogout}
+          onHome={openHome}
+          onMockTests={openMockTests}
+          onAI={openAI}
+          onProfile={openProfile}
+          onRoadmaps={openRoadmaps}
+          onTarget={openTarget}
+        />
+      )}
+
     </div>
   );
 }
