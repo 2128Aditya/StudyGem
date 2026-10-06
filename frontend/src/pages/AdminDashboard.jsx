@@ -31,6 +31,15 @@ import {
   GraduationCap,
   Menu,
   ShieldCheck,
+  Music,
+  Image,
+  Play,
+  Pause,
+  UserCheck,
+  UserPlus,
+  Activity,
+  TrendingUp,
+  MoreHorizontal,
 } from "lucide-react";
 
 
@@ -51,6 +60,61 @@ const AdminDashboard = ({ onLogout }) => {
 
   const [pyqs, setPyqs] = useState([]);
   const [loadingPyqs, setLoadingPyqs] =
+    useState(true);
+
+  // =====================================================
+  // SONG MANAGEMENT
+  // =====================================================
+
+  const songAudioInputRef = useRef(null);
+  const songThumbnailInputRef = useRef(null);
+
+  const [songs, setSongs] = useState([]);
+  const [loadingSongs, setLoadingSongs] =
+    useState(true);
+
+  const [uploadingSong, setUploadingSong] =
+    useState(false);
+
+  const [deletingSongId, setDeletingSongId] =
+    useState(null);
+
+  const [togglingSongId, setTogglingSongId] =
+    useState(null);
+
+  const [songTitle, setSongTitle] =
+    useState("");
+
+  const [songArtist, setSongArtist] =
+    useState("");
+
+  const [songOrder, setSongOrder] =
+    useState("");
+
+  const [selectedSongAudio, setSelectedSongAudio] =
+    useState(null);
+
+  const [selectedSongThumbnail, setSelectedSongThumbnail] =
+    useState(null);
+
+  // =====================================================
+  // USER ANALYTICS
+  // =====================================================
+
+  const [userStats, setUserStats] = useState({
+    totalUsers: 0,
+    verifiedUsers: 0,
+    activeUsers: 0,
+    newUsers7Days: 0,
+    admins: 0,
+    growth: [],
+    recentUsers: [],
+  });
+
+  const [loadingUserStats, setLoadingUserStats] =
+    useState(true);
+
+  const [userStatsAvailable, setUserStatsAvailable] =
     useState(true);
 
   const [uploading, setUploading] =
@@ -159,8 +223,127 @@ const AdminDashboard = ({ onLogout }) => {
   };
 
 
+  // =====================================================
+  // FETCH SONGS
+  // =====================================================
+
+  const fetchSongs = async () => {
+    try {
+      setLoadingSongs(true);
+
+      const token = getToken();
+
+      const response = await fetch(
+        `${API_BASE_URL}/songs/admin`,
+        {
+          headers: token
+            ? {
+                Authorization: `Bearer ${token}`,
+              }
+            : {},
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok || !data.success) {
+        throw new Error(
+          data.message ||
+            "Failed to fetch songs."
+        );
+      }
+
+      setSongs(data.songs || []);
+    } catch (err) {
+      console.error(
+        "Fetch Songs Error:",
+        err
+      );
+    } finally {
+      setLoadingSongs(false);
+    }
+  };
+
+
+  // =====================================================
+  // FETCH USER ANALYTICS
+  // =====================================================
+
+  const fetchUserStats = async () => {
+    try {
+      setLoadingUserStats(true);
+
+      const token = getToken();
+
+      if (!token) {
+        setUserStatsAvailable(false);
+        return;
+      }
+
+      const response = await fetch(
+        `${API_BASE_URL}/auth/admin-stats`,
+        {
+          headers: {
+            Authorization:
+              `Bearer ${token}`,
+          },
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok || !data.success) {
+        throw new Error(
+          data.message ||
+            "Failed to fetch user statistics."
+        );
+      }
+
+      setUserStats({
+        totalUsers:
+          Number(data.stats?.totalUsers) || 0,
+
+        verifiedUsers:
+          Number(data.stats?.verifiedUsers) || 0,
+
+        activeUsers:
+          Number(data.stats?.activeUsers) || 0,
+
+        newUsers7Days:
+          Number(data.stats?.newUsers7Days) || 0,
+
+        admins:
+          Number(data.stats?.admins) || 0,
+
+        growth:
+          Array.isArray(data.stats?.growth)
+            ? data.stats.growth
+            : [],
+
+        recentUsers:
+          Array.isArray(data.stats?.recentUsers)
+            ? data.stats.recentUsers
+            : [],
+      });
+
+      setUserStatsAvailable(true);
+    } catch (err) {
+      console.error(
+        "Fetch User Stats Error:",
+        err
+      );
+
+      setUserStatsAvailable(false);
+    } finally {
+      setLoadingUserStats(false);
+    }
+  };
+
+
   useEffect(() => {
     fetchPYQs();
+    fetchSongs();
+    fetchUserStats();
   }, []);
 
 
@@ -228,10 +411,406 @@ const AdminDashboard = ({ onLogout }) => {
 
 
   // =====================================================
+  // SONG FILE VALIDATION
+  // =====================================================
+
+  const handleSongAudioChange = (event) => {
+    clearMessages();
+
+    const file =
+      event.target.files?.[0];
+
+    if (!file) {
+      setSelectedSongAudio(null);
+      return;
+    }
+
+    const allowedTypes = [
+      "audio/mpeg",
+      "audio/mp3",
+      "audio/wav",
+      "audio/x-wav",
+      "audio/ogg",
+      "audio/mp4",
+      "audio/x-m4a",
+      "audio/aac",
+    ];
+
+    const validType =
+      allowedTypes.includes(file.type) ||
+      /\.(mp3|wav|ogg|m4a|aac)$/i.test(
+        file.name
+      );
+
+    if (!validType) {
+      setError(
+        "Please select a valid audio file (MP3, WAV, OGG, M4A or AAC)."
+      );
+
+      event.target.value = "";
+      setSelectedSongAudio(null);
+      return;
+    }
+
+    if (
+      file.size >
+      50 * 1024 * 1024
+    ) {
+      setError(
+        "Audio file must be less than 50 MB."
+      );
+
+      event.target.value = "";
+      setSelectedSongAudio(null);
+      return;
+    }
+
+    setSelectedSongAudio(file);
+  };
+
+
+  const handleSongThumbnailChange = (
+    event
+  ) => {
+    clearMessages();
+
+    const file =
+      event.target.files?.[0];
+
+    if (!file) {
+      setSelectedSongThumbnail(null);
+      return;
+    }
+
+    if (!file.type.startsWith("image/")) {
+      setError(
+        "Please select a valid image for the thumbnail."
+      );
+
+      event.target.value = "";
+      setSelectedSongThumbnail(null);
+      return;
+    }
+
+    if (
+      file.size >
+      5 * 1024 * 1024
+    ) {
+      setError(
+        "Thumbnail must be less than 5 MB."
+      );
+
+      event.target.value = "";
+      setSelectedSongThumbnail(null);
+      return;
+    }
+
+    setSelectedSongThumbnail(file);
+  };
+
+
+  const resetSongForm = () => {
+    setSongTitle("");
+    setSongArtist("");
+    setSongOrder("");
+    setSelectedSongAudio(null);
+    setSelectedSongThumbnail(null);
+
+    if (songAudioInputRef.current) {
+      songAudioInputRef.current.value = "";
+    }
+
+    if (songThumbnailInputRef.current) {
+      songThumbnailInputRef.current.value = "";
+    }
+  };
+
+
+  // =====================================================
+  // UPLOAD SONG
+  // =====================================================
+
+  const handleSongUpload = async (
+    event
+  ) => {
+    event.preventDefault();
+
+    clearMessages();
+
+    if (!songTitle.trim()) {
+      setError(
+        "Please enter a song title."
+      );
+      return;
+    }
+
+    if (!selectedSongAudio) {
+      setError(
+        "Please select an audio file."
+      );
+      return;
+    }
+
+    const token = getToken();
+
+    if (!token) {
+      setError(
+        "Authentication expired. Please login again."
+      );
+      return;
+    }
+
+    try {
+      setUploadingSong(true);
+
+      const formData =
+        new FormData();
+
+      formData.append(
+        "title",
+        songTitle.trim()
+      );
+
+      formData.append(
+        "artist",
+        songArtist.trim() ||
+          "StudyGem"
+      );
+
+      formData.append(
+        "order",
+        songOrder || "0"
+      );
+
+      formData.append(
+        "audio",
+        selectedSongAudio
+      );
+
+      if (selectedSongThumbnail) {
+        formData.append(
+          "thumbnail",
+          selectedSongThumbnail
+        );
+      }
+
+      const response =
+        await fetch(
+          `${API_BASE_URL}/songs/add`,
+          {
+            method: "POST",
+            headers: {
+              Authorization:
+                `Bearer ${token}`,
+            },
+            body: formData,
+          }
+        );
+
+      const data =
+        await response.json();
+
+      if (
+        !response.ok ||
+        !data.success
+      ) {
+        throw new Error(
+          data.message ||
+            "Failed to upload song."
+        );
+      }
+
+      setSuccess(
+        "Song uploaded successfully."
+      );
+
+      resetSongForm();
+
+      await fetchSongs();
+    } catch (err) {
+      console.error(
+        "Upload Song Error:",
+        err
+      );
+
+      setError(
+        err.message ||
+          "Something went wrong while uploading the song."
+      );
+    } finally {
+      setUploadingSong(false);
+    }
+  };
+
+
+  // =====================================================
+  // DELETE SONG
+  // =====================================================
+
+  const handleDeleteSong = async (
+    id
+  ) => {
+    const confirmed =
+      window.confirm(
+        "Are you sure you want to delete this song? This will also remove its files from Cloudinary."
+      );
+
+    if (!confirmed) {
+      return;
+    }
+
+    const token = getToken();
+
+    if (!token) {
+      setError(
+        "Authentication expired. Please login again."
+      );
+      return;
+    }
+
+    try {
+      clearMessages();
+
+      setDeletingSongId(id);
+
+      const response =
+        await fetch(
+          `${API_BASE_URL}/songs/${id}`,
+          {
+            method: "DELETE",
+            headers: {
+              Authorization:
+                `Bearer ${token}`,
+            },
+          }
+        );
+
+      const data =
+        await response.json();
+
+      if (
+        !response.ok ||
+        !data.success
+      ) {
+        throw new Error(
+          data.message ||
+            "Failed to delete song."
+        );
+      }
+
+      setSuccess(
+        "Song deleted successfully."
+      );
+
+      setSongs((current) =>
+        current.filter(
+          (item) =>
+            item._id !== id
+        )
+      );
+    } catch (err) {
+      console.error(
+        "Delete Song Error:",
+        err
+      );
+
+      setError(
+        err.message ||
+          "Unable to delete song."
+      );
+    } finally {
+      setDeletingSongId(null);
+    }
+  };
+
+
+  // =====================================================
+  // TOGGLE SONG
+  // =====================================================
+
+  const handleToggleSong = async (
+    id
+  ) => {
+    const token = getToken();
+
+    if (!token) {
+      setError(
+        "Authentication expired. Please login again."
+      );
+      return;
+    }
+
+    try {
+      clearMessages();
+
+      setTogglingSongId(id);
+
+      const response =
+        await fetch(
+          `${API_BASE_URL}/songs/${id}/toggle`,
+          {
+            method: "PATCH",
+            headers: {
+              Authorization:
+                `Bearer ${token}`,
+            },
+          }
+        );
+
+      const data =
+        await response.json();
+
+      if (
+        !response.ok ||
+        !data.success
+      ) {
+        throw new Error(
+          data.message ||
+            "Failed to update song."
+        );
+      }
+
+      setSongs((current) =>
+        current.map(
+          (item) =>
+            item._id === id
+              ? {
+                  ...item,
+                  isActive:
+                    data.song?.isActive ??
+                    !item.isActive,
+                }
+              : item
+        )
+      );
+
+      setSuccess(
+        data.message ||
+          "Song status updated successfully."
+      );
+    } catch (err) {
+      console.error(
+        "Toggle Song Error:",
+        err
+      );
+
+      setError(
+        err.message ||
+          "Unable to update song."
+      );
+    } finally {
+      setTogglingSongId(null);
+    }
+  };
+
+
+  // =====================================================
   // UPLOAD PYQ
   // =====================================================
 
-  const handleUpload = async (event) => {
+  const handleUpload = async (
+    event
+  ) => {
     event.preventDefault();
 
     clearMessages();
@@ -419,6 +998,7 @@ const AdminDashboard = ({ onLogout }) => {
 
     try {
       clearMessages();
+
       setDeletingId(id);
 
       const response =
@@ -480,6 +1060,7 @@ const AdminDashboard = ({ onLogout }) => {
     clearMessages();
 
     setEditingId(item._id);
+
     setEditTitle(
       item.title || ""
     );
@@ -644,6 +1225,17 @@ const AdminDashboard = ({ onLogout }) => {
   // =====================================================
 
   const stats = [
+    {
+      title: "Total Users",
+      value:
+        userStatsAvailable
+          ? userStats.totalUsers
+          : "—",
+      icon: Users,
+      description:
+        "Registered students",
+    },
+
     {
       title: "Total PYQs",
       value: pyqs.length,
@@ -955,7 +1547,7 @@ const AdminDashboard = ({ onLogout }) => {
                       e.target.value
                     )
                   }
-                  placeholder="Search PYQs..."
+                  placeholder="Search PYQs, songs and users..."
                   className={`
                     w-full
                     bg-transparent
@@ -1218,7 +1810,7 @@ const AdminDashboard = ({ onLogout }) => {
                     e.target.value
                   )
                 }
-                placeholder="Search PYQs..."
+                placeholder="Search PYQs, songs and users..."
                 className={`
                   w-full
                   bg-transparent
@@ -1319,7 +1911,9 @@ const AdminDashboard = ({ onLogout }) => {
               "
             >
               Manage StudyGem PYQs,
-              upload new papers and
+              upload new papers,
+              manage study music,
+              monitor users and
               keep your study content
               organized from one place.
             </p>
@@ -1447,7 +2041,7 @@ const AdminDashboard = ({ onLogout }) => {
             grid-cols-1
             sm:grid-cols-2
             lg:grid-cols-3
-            xl:grid-cols-5
+            xl:grid-cols-6
             gap-4
           "
         >
@@ -1535,6 +2129,794 @@ const AdminDashboard = ({ onLogout }) => {
                 </div>
               );
             }
+          )}
+        </section>
+
+
+        {/* =================================================
+            USER ANALYTICS
+        ================================================= */}
+
+        <section
+          className={`
+            mt-6
+            ${cardBg}
+            rounded-[24px]
+            border
+            ${borderColor}
+            shadow-sm
+            overflow-hidden
+          `}
+        >
+          <div
+            className={`
+              px-5
+              sm:px-6
+              py-5
+              border-b
+              ${borderColor}
+            `}
+          >
+            <div
+              className="
+                flex
+                flex-col
+                sm:flex-row
+                sm:items-center
+                justify-between
+                gap-4
+              "
+            >
+              <div>
+                <div
+                  className="
+                    flex
+                    items-center
+                    gap-2
+                  "
+                >
+                  <Users
+                    size={19}
+                    className="text-[#6c2cf5]"
+                  />
+
+                  <h3
+                    className="
+                      text-lg
+                      font-bold
+                    "
+                  >
+                    User Overview
+                  </h3>
+                </div>
+
+                <p
+                  className={`
+                    mt-1
+                    text-sm
+                    ${textSecondary}
+                  `}
+                >
+                  Monitor registered users,
+                  verification and recent
+                  account activity.
+                </p>
+              </div>
+
+              <button
+                type="button"
+                onClick={fetchUserStats}
+                disabled={
+                  loadingUserStats
+                }
+                className="
+                  h-10
+                  px-4
+                  rounded-xl
+                  border
+                  border-[#ddd8ed]
+                  flex
+                  items-center
+                  justify-center
+                  gap-2
+                  text-sm
+                  font-semibold
+                  text-[#6425ed]
+                  hover:bg-[#f6f2ff]
+                  transition
+                  disabled:opacity-50
+                "
+              >
+                <RefreshCw
+                  size={16}
+                  className={
+                    loadingUserStats
+                      ? "animate-spin"
+                      : ""
+                  }
+                />
+
+                Refresh Users
+              </button>
+            </div>
+          </div>
+
+
+          {!userStatsAvailable &&
+          !loadingUserStats ? (
+            <div
+              className="
+                px-5
+                sm:px-6
+                py-8
+                text-center
+              "
+            >
+              <div
+                className="
+                  mx-auto
+                  h-12
+                  w-12
+                  rounded-2xl
+                  bg-[#f0eaff]
+                  flex
+                  items-center
+                  justify-center
+                "
+              >
+                <Users
+                  size={22}
+                  className="text-[#7c3aed]"
+                />
+              </div>
+
+              <h4
+                className="
+                  mt-4
+                  text-sm
+                  font-semibold
+                "
+              >
+                User analytics unavailable
+              </h4>
+
+              <p
+                className={`
+                  mt-1
+                  text-xs
+                  max-w-lg
+                  mx-auto
+                  ${textSecondary}
+                `}
+              >
+                Connect the admin user
+                statistics endpoint to show
+                live registered-user details.
+              </p>
+            </div>
+          ) : (
+            <>
+              <div
+                className="
+                  p-5
+                  sm:p-6
+                  grid
+                  grid-cols-1
+                  sm:grid-cols-2
+                  lg:grid-cols-4
+                  gap-4
+                "
+              >
+                <div
+                  className={`
+                    rounded-2xl
+                    border
+                    ${borderColor}
+                    p-4
+                    ${darkMode
+                      ? "bg-[#171725]"
+                      : "bg-[#faf9ff]"
+                    }
+                  `}
+                >
+                  <div
+                    className="
+                      flex
+                      items-center
+                      justify-between
+                    "
+                  >
+                    <div
+                      className="
+                        h-10
+                        w-10
+                        rounded-xl
+                        bg-[#eee8ff]
+                        flex
+                        items-center
+                        justify-center
+                      "
+                    >
+                      <Users
+                        size={18}
+                        className="text-[#6c2cf5]"
+                      />
+                    </div>
+
+                    <TrendingUp
+                      size={17}
+                      className="text-emerald-500"
+                    />
+                  </div>
+
+                  <p
+                    className="
+                      mt-4
+                      text-2xl
+                      font-bold
+                    "
+                  >
+                    {loadingUserStats
+                      ? "..."
+                      : userStats.totalUsers}
+                  </p>
+
+                  <p
+                    className={`
+                      mt-1
+                      text-xs
+                      ${textSecondary}
+                    `}
+                  >
+                    Total registered users
+                  </p>
+                </div>
+
+
+                <div
+                  className={`
+                    rounded-2xl
+                    border
+                    ${borderColor}
+                    p-4
+                    ${darkMode
+                      ? "bg-[#171725]"
+                      : "bg-[#faf9ff]"
+                    }
+                  `}
+                >
+                  <div
+                    className="
+                      h-10
+                      w-10
+                      rounded-xl
+                      bg-green-50
+                      flex
+                      items-center
+                      justify-center
+                    "
+                  >
+                    <UserCheck
+                      size={18}
+                      className="text-green-600"
+                    />
+                  </div>
+
+                  <p
+                    className="
+                      mt-4
+                      text-2xl
+                      font-bold
+                    "
+                  >
+                    {loadingUserStats
+                      ? "..."
+                      : userStats.verifiedUsers}
+                  </p>
+
+                  <p
+                    className={`
+                      mt-1
+                      text-xs
+                      ${textSecondary}
+                    `}
+                  >
+                    Verified users
+                  </p>
+                </div>
+
+
+                <div
+                  className={`
+                    rounded-2xl
+                    border
+                    ${borderColor}
+                    p-4
+                    ${darkMode
+                      ? "bg-[#171725]"
+                      : "bg-[#faf9ff]"
+                    }
+                  `}
+                >
+                  <div
+                    className="
+                      h-10
+                      w-10
+                      rounded-xl
+                      bg-blue-50
+                      flex
+                      items-center
+                      justify-center
+                    "
+                  >
+                    <UserPlus
+                      size={18}
+                      className="text-blue-600"
+                    />
+                  </div>
+
+                  <p
+                    className="
+                      mt-4
+                      text-2xl
+                      font-bold
+                    "
+                  >
+                    {loadingUserStats
+                      ? "..."
+                      : userStats.newUsers7Days}
+                  </p>
+
+                  <p
+                    className={`
+                      mt-1
+                      text-xs
+                      ${textSecondary}
+                    `}
+                  >
+                    New users · last 7 days
+                  </p>
+                </div>
+
+
+                <div
+                  className={`
+                    rounded-2xl
+                    border
+                    ${borderColor}
+                    p-4
+                    ${darkMode
+                      ? "bg-[#171725]"
+                      : "bg-[#faf9ff]"
+                    }
+                  `}
+                >
+                  <div
+                    className="
+                      h-10
+                      w-10
+                      rounded-xl
+                      bg-purple-50
+                      flex
+                      items-center
+                      justify-center
+                    "
+                  >
+                    <Activity
+                      size={18}
+                      className="text-purple-600"
+                    />
+                  </div>
+
+                  <p
+                    className="
+                      mt-4
+                      text-2xl
+                      font-bold
+                    "
+                  >
+                    {loadingUserStats
+                      ? "..."
+                      : userStats.activeUsers}
+                  </p>
+
+                  <p
+                    className={`
+                      mt-1
+                      text-xs
+                      ${textSecondary}
+                    `}
+                  >
+                    Active users · last 7 days
+                  </p>
+                </div>
+              </div>
+
+
+              <div
+                className="
+                  px-5
+                  sm:px-6
+                  pb-5
+                  sm:pb-6
+                  grid
+                  grid-cols-1
+                  xl:grid-cols-[1.35fr_0.65fr]
+                  gap-5
+                "
+              >
+                <div
+                  className={`
+                    rounded-2xl
+                    border
+                    ${borderColor}
+                    p-5
+                  `}
+                >
+                  <div
+                    className="
+                      flex
+                      items-center
+                      justify-between
+                      gap-3
+                    "
+                  >
+                    <div>
+                      <h4
+                        className="
+                          text-sm
+                          font-semibold
+                        "
+                      >
+                        User Growth
+                      </h4>
+
+                      <p
+                        className={`
+                          mt-1
+                          text-xs
+                          ${textSecondary}
+                        `}
+                      >
+                        Registered users over recent
+                        months.
+                      </p>
+                    </div>
+
+                    <div
+                      className="
+                        rounded-full
+                        bg-[#f0eaff]
+                        px-3
+                        py-1.5
+                        text-[11px]
+                        font-medium
+                        text-[#6425ed]
+                      "
+                    >
+                      Last 6 months
+                    </div>
+                  </div>
+
+
+                  <div
+                    className="
+                      mt-6
+                      h-44
+                      flex
+                      items-end
+                      gap-2
+                      sm:gap-4
+                    "
+                  >
+                    {(
+                      userStats.growth.length
+                        ? userStats.growth
+                        : [
+                            {
+                              label: "—",
+                              users: 0,
+                            },
+                          ]
+                    ).map(
+                      (item, index) => {
+                        const values =
+                          userStats.growth.length
+                            ? userStats.growth.map(
+                                (entry) =>
+                                  Number(
+                                    entry.users ||
+                                      entry.count ||
+                                      entry.value ||
+                                      0
+                                  )
+                              )
+                            : [0];
+
+                        const maxValue =
+                          Math.max(
+                            ...values,
+                            1
+                          );
+
+                        const value =
+                          Number(
+                            item.users ||
+                              item.count ||
+                              item.value ||
+                              0
+                          );
+
+                        const height =
+                          Math.max(
+                            value === 0
+                              ? 4
+                              : (value /
+                                  maxValue) *
+                                  100,
+                            4
+                          );
+
+                        return (
+                          <div
+                            key={`${item.label || index}-${index}`}
+                            className="
+                              flex
+                              h-full
+                              flex-1
+                              min-w-0
+                              flex-col
+                              items-center
+                              justify-end
+                              gap-2
+                            "
+                          >
+                            <span
+                              className="
+                                text-[10px]
+                                text-[#7a8195]
+                              "
+                            >
+                              {value || ""}
+                            </span>
+
+                            <div
+                              className="
+                                w-full
+                                max-w-10
+                                rounded-t-xl
+                                bg-gradient-to-t
+                                from-[#5b21e9]
+                                to-[#a855f7]
+                                transition-all
+                              "
+                              style={{
+                                height: `${height}%`,
+                              }}
+                            />
+
+                            <span
+                              className="
+                                text-[10px]
+                                text-[#7a8195]
+                                truncate
+                                max-w-12
+                              "
+                            >
+                              {item.label ||
+                                "—"}
+                            </span>
+                          </div>
+                        );
+                      }
+                    )}
+                  </div>
+                </div>
+
+
+                <div
+                  className={`
+                    rounded-2xl
+                    border
+                    ${borderColor}
+                    p-5
+                  `}
+                >
+                  <div
+                    className="
+                      flex
+                      items-center
+                      justify-between
+                      gap-3
+                    "
+                  >
+                    <div>
+                      <h4
+                        className="
+                          text-sm
+                          font-semibold
+                        "
+                      >
+                        Recent Users
+                      </h4>
+
+                      <p
+                        className={`
+                          mt-1
+                          text-xs
+                          ${textSecondary}
+                        `}
+                      >
+                        Latest registered accounts.
+                      </p>
+                    </div>
+
+                    <div
+                      className="
+                        h-9
+                        w-9
+                        rounded-xl
+                        bg-[#f0eaff]
+                        flex
+                        items-center
+                        justify-center
+                      "
+                    >
+                      <Users
+                        size={16}
+                        className="text-[#6425ed]"
+                      />
+                    </div>
+                  </div>
+
+
+                  <div
+                    className="
+                      mt-4
+                      space-y-3
+                    "
+                  >
+                    {loadingUserStats ? (
+                      <div
+                        className="
+                          py-8
+                          flex
+                          items-center
+                          justify-center
+                        "
+                      >
+                        <Loader2
+                          size={20}
+                          className="
+                            animate-spin
+                            text-[#7c3aed]
+                          "
+                        />
+                      </div>
+                    ) : userStats.recentUsers
+                        .length === 0 ? (
+                      <div
+                        className="
+                          py-8
+                          text-center
+                        "
+                      >
+                        <p
+                          className={`
+                            text-xs
+                            ${textSecondary}
+                          `}
+                        >
+                          No recent users found.
+                        </p>
+                      </div>
+                    ) : (
+                      userStats.recentUsers
+                        .slice(0, 5)
+                        .map(
+                          (user) => {
+                            const userName =
+                              user.name ||
+                              "User";
+
+                            const initials =
+                              userName
+                                .split(" ")
+                                .map(
+                                  (part) =>
+                                    part[0]
+                                )
+                                .join("")
+                                .slice(0, 2)
+                                .toUpperCase();
+
+                            return (
+                              <div
+                                key={
+                                  user._id ||
+                                  user.id ||
+                                  user.email
+                                }
+                                className="
+                                  flex
+                                  items-center
+                                  gap-3
+                                "
+                              >
+                                <div
+                                  className="
+                                    h-9
+                                    w-9
+                                    shrink-0
+                                    rounded-full
+                                    bg-gradient-to-br
+                                    from-[#8b32ff]
+                                    to-[#4c20ff]
+                                    flex
+                                    items-center
+                                    justify-center
+                                    text-white
+                                    text-[11px]
+                                    font-semibold
+                                  "
+                                >
+                                  {initials}
+                                </div>
+
+                                <div
+                                  className="
+                                    min-w-0
+                                    flex-1
+                                  "
+                                >
+                                  <p
+                                    className="
+                                      text-xs
+                                      font-semibold
+                                      truncate
+                                    "
+                                  >
+                                    {userName}
+                                  </p>
+
+                                  <p
+                                    className={`
+                                      mt-0.5
+                                      text-[10px]
+                                      truncate
+                                      ${textSecondary}
+                                    `}
+                                  >
+                                    {user.email ||
+                                      "No email"}
+                                  </p>
+                                </div>
+
+                                <span
+                                  className="
+                                    shrink-0
+                                    rounded-full
+                                    bg-green-50
+                                    px-2
+                                    py-1
+                                    text-[10px]
+                                    font-medium
+                                    text-green-600
+                                  "
+                                >
+                                  {user.isVerified
+                                    ? "Verified"
+                                    : "Pending"}
+                                </span>
+                              </div>
+                            );
+                          }
+                        )
+                    )}
+                  </div>
+                </div>
+              </div>
+            </>
           )}
         </section>
 
@@ -2092,7 +3474,9 @@ const AdminDashboard = ({ onLogout }) => {
                   onClick={
                     resetUploadForm
                   }
-                  disabled={uploading}
+                  disabled={
+                    uploading
+                  }
                   className="
                     h-11
                     px-5
@@ -2112,7 +3496,9 @@ const AdminDashboard = ({ onLogout }) => {
 
                 <button
                   type="submit"
-                  disabled={uploading}
+                  disabled={
+                    uploading
+                  }
                   className="
                     h-11
                     px-6
@@ -2157,6 +3543,1086 @@ const AdminDashboard = ({ onLogout }) => {
               </div>
             </div>
           </form>
+        </section>
+
+
+        {/* =================================================
+            SONG MANAGEMENT
+        ================================================= */}
+
+        <section
+          className={`
+            mt-6
+            ${cardBg}
+            rounded-[24px]
+            border
+            ${borderColor}
+            shadow-sm
+            overflow-hidden
+          `}
+        >
+          <div
+            className={`
+              px-5
+              sm:px-6
+              py-5
+              border-b
+              ${borderColor}
+            `}
+          >
+            <div
+              className="
+                flex
+                flex-col
+                sm:flex-row
+                sm:items-center
+                justify-between
+                gap-4
+              "
+            >
+              <div>
+                <div
+                  className="
+                    flex
+                    items-center
+                    gap-2
+                  "
+                >
+                  <Music
+                    size={19}
+                    className="text-[#6c2cf5]"
+                  />
+
+                  <h3
+                    className="
+                      text-lg
+                      font-bold
+                    "
+                  >
+                    Study Music
+                  </h3>
+                </div>
+
+                <p
+                  className={`
+                    mt-1
+                    text-sm
+                    ${textSecondary}
+                  `}
+                >
+                  Upload motivational study songs
+                  for the Home page player.
+                </p>
+              </div>
+
+              <div
+                className="
+                  hidden
+                  sm:flex
+                  items-center
+                  gap-2
+                  rounded-full
+                  bg-[#f2edff]
+                  px-3
+                  py-1.5
+                  text-xs
+                  font-medium
+                  text-[#6425ed]
+                "
+              >
+                Audio · Max 50 MB
+              </div>
+            </div>
+          </div>
+
+
+          <form
+            onSubmit={
+              handleSongUpload
+            }
+            className="p-5 sm:p-6"
+          >
+            <div
+              className="
+                grid
+                grid-cols-1
+                md:grid-cols-2
+                xl:grid-cols-4
+                gap-5
+              "
+            >
+              <div
+                className="
+                  md:col-span-2
+                  xl:col-span-2
+                "
+              >
+                <label
+                  className="
+                    block
+                    text-sm
+                    font-semibold
+                    mb-2
+                  "
+                >
+                  Song Title
+                </label>
+
+                <input
+                  value={songTitle}
+                  onChange={(e) =>
+                    setSongTitle(
+                      e.target.value
+                    )
+                  }
+                  placeholder="e.g. Focus & Keep Going"
+                  className={`
+                    w-full
+                    h-12
+                    rounded-xl
+                    border
+                    ${borderColor}
+                    px-4
+                    text-sm
+                    outline-none
+                    ${darkMode
+                      ? "bg-[#171725]"
+                      : "bg-white"
+                    }
+                    focus:border-[#7c3aed]
+                    focus:ring-4
+                    focus:ring-purple-100
+                  `}
+                />
+              </div>
+
+
+              <div>
+                <label
+                  className="
+                    block
+                    text-sm
+                    font-semibold
+                    mb-2
+                  "
+                >
+                  Artist
+                </label>
+
+                <input
+                  value={songArtist}
+                  onChange={(e) =>
+                    setSongArtist(
+                      e.target.value
+                    )
+                  }
+                  placeholder="StudyGem"
+                  className={`
+                    w-full
+                    h-12
+                    rounded-xl
+                    border
+                    ${borderColor}
+                    px-4
+                    text-sm
+                    outline-none
+                    ${darkMode
+                      ? "bg-[#171725]"
+                      : "bg-white"
+                    }
+                    focus:border-[#7c3aed]
+                  `}
+                />
+              </div>
+
+
+              <div>
+                <label
+                  className="
+                    block
+                    text-sm
+                    font-semibold
+                    mb-2
+                  "
+                >
+                  Order
+                </label>
+
+                <input
+                  type="number"
+                  min="0"
+                  value={songOrder}
+                  onChange={(e) =>
+                    setSongOrder(
+                      e.target.value
+                    )
+                  }
+                  placeholder="1"
+                  className={`
+                    w-full
+                    h-12
+                    rounded-xl
+                    border
+                    ${borderColor}
+                    px-4
+                    text-sm
+                    outline-none
+                    ${darkMode
+                      ? "bg-[#171725]"
+                      : "bg-white"
+                    }
+                    focus:border-[#7c3aed]
+                  `}
+                />
+              </div>
+
+
+              <div
+                className="
+                  md:col-span-1
+                  xl:col-span-2
+                "
+              >
+                <label
+                  className="
+                    block
+                    text-sm
+                    font-semibold
+                    mb-2
+                  "
+                >
+                  Audio File
+                </label>
+
+                <input
+                  ref={
+                    songAudioInputRef
+                  }
+                  type="file"
+                  accept=".mp3,.wav,.ogg,.m4a,.aac,audio/*"
+                  onChange={
+                    handleSongAudioChange
+                  }
+                  className="hidden"
+                  id="study-song-audio"
+                />
+
+                <label
+                  htmlFor="study-song-audio"
+                  className={`
+                    min-h-14
+                    rounded-xl
+                    border
+                    border-dashed
+                    ${darkMode
+                      ? "border-[#393950] bg-[#171725]"
+                      : "border-[#cfc7e9] bg-[#faf9ff]"
+                    }
+                    flex
+                    items-center
+                    gap-3
+                    px-4
+                    cursor-pointer
+                    hover:border-[#7c3aed]
+                    transition
+                  `}
+                >
+                  <div
+                    className="
+                      h-9
+                      w-9
+                      rounded-lg
+                      bg-[#eee8ff]
+                      flex
+                      items-center
+                      justify-center
+                      shrink-0
+                    "
+                  >
+                    <Music
+                      size={17}
+                      className="text-[#6c2cf5]"
+                    />
+                  </div>
+
+                  <div className="min-w-0">
+                    <p
+                      className={`
+                        text-sm
+                        truncate
+                        ${selectedSongAudio
+                          ? textPrimary
+                          : textSecondary
+                        }
+                      `}
+                    >
+                      {selectedSongAudio
+                        ? formatFileName(
+                            selectedSongAudio.name
+                          )
+                        : "Choose audio file"}
+                    </p>
+
+                    <p
+                      className={`
+                        mt-0.5
+                        text-[11px]
+                        ${textSecondary}
+                      `}
+                    >
+                      MP3, WAV, OGG, M4A or AAC
+                    </p>
+                  </div>
+                </label>
+              </div>
+
+
+              <div
+                className="
+                  md:col-span-1
+                  xl:col-span-2
+                "
+              >
+                <label
+                  className="
+                    block
+                    text-sm
+                    font-semibold
+                    mb-2
+                  "
+                >
+                  Thumbnail
+                  <span
+                    className={`
+                      ml-1
+                      font-normal
+                      ${textSecondary}
+                    `}
+                  >
+                    (optional)
+                  </span>
+                </label>
+
+                <input
+                  ref={
+                    songThumbnailInputRef
+                  }
+                  type="file"
+                  accept="image/*"
+                  onChange={
+                    handleSongThumbnailChange
+                  }
+                  className="hidden"
+                  id="study-song-thumbnail"
+                />
+
+                <label
+                  htmlFor="study-song-thumbnail"
+                  className={`
+                    min-h-14
+                    rounded-xl
+                    border
+                    border-dashed
+                    ${darkMode
+                      ? "border-[#393950] bg-[#171725]"
+                      : "border-[#cfc7e9] bg-[#faf9ff]"
+                    }
+                    flex
+                    items-center
+                    gap-3
+                    px-4
+                    cursor-pointer
+                    hover:border-[#7c3aed]
+                    transition
+                  `}
+                >
+                  <div
+                    className="
+                      h-9
+                      w-9
+                      rounded-lg
+                      bg-[#eee8ff]
+                      flex
+                      items-center
+                      justify-center
+                      shrink-0
+                    "
+                  >
+                    <Image
+                      size={17}
+                      className="text-[#6c2cf5]"
+                    />
+                  </div>
+
+                  <div className="min-w-0">
+                    <p
+                      className={`
+                        text-sm
+                        truncate
+                        ${selectedSongThumbnail
+                          ? textPrimary
+                          : textSecondary
+                        }
+                      `}
+                    >
+                      {selectedSongThumbnail
+                        ? formatFileName(
+                            selectedSongThumbnail.name
+                          )
+                        : "Choose thumbnail image"}
+                    </p>
+
+                    <p
+                      className={`
+                        mt-0.5
+                        text-[11px]
+                        ${textSecondary}
+                      `}
+                    >
+                      JPG, PNG, WEBP · Max 5 MB
+                    </p>
+                  </div>
+                </label>
+              </div>
+            </div>
+
+
+            <div
+              className="
+                mt-6
+                flex
+                flex-col
+                sm:flex-row
+                sm:items-center
+                justify-between
+                gap-4
+              "
+            >
+              <p
+                className={`
+                  text-xs
+                  ${textSecondary}
+                `}
+              >
+                Songs uploaded here will become
+                available to the StudyGem music
+                player.
+              </p>
+
+              <div
+                className="
+                  flex
+                  gap-3
+                "
+              >
+                <button
+                  type="button"
+                  onClick={
+                    resetSongForm
+                  }
+                  disabled={
+                    uploadingSong
+                  }
+                  className="
+                    h-11
+                    px-5
+                    rounded-xl
+                    border
+                    border-[#ddd8ed]
+                    text-sm
+                    font-semibold
+                    text-[#5f6579]
+                    hover:bg-[#f7f5fb]
+                    transition
+                    disabled:opacity-50
+                  "
+                >
+                  Clear
+                </button>
+
+                <button
+                  type="submit"
+                  disabled={
+                    uploadingSong
+                  }
+                  className="
+                    h-11
+                    px-6
+                    rounded-xl
+                    bg-gradient-to-r
+                    from-[#7c2ff3]
+                    to-[#5b21e9]
+                    text-white
+                    text-sm
+                    font-semibold
+                    flex
+                    items-center
+                    justify-center
+                    gap-2
+                    shadow-lg
+                    shadow-purple-200
+                    hover:shadow-purple-300
+                    transition
+                    disabled:opacity-60
+                    disabled:cursor-not-allowed
+                  "
+                >
+                  {uploadingSong ? (
+                    <>
+                      <Loader2
+                        size={17}
+                        className="animate-spin"
+                      />
+
+                      Uploading...
+                    </>
+                  ) : (
+                    <>
+                      <Upload
+                        size={17}
+                      />
+
+                      Upload Song
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
+          </form>
+
+
+          {/* MUSIC LIBRARY */}
+
+          <div
+            className={`
+              border-t
+              ${borderColor}
+            `}
+          >
+            <div
+              className="
+                px-5
+                sm:px-6
+                py-5
+                flex
+                items-center
+                justify-between
+                gap-4
+              "
+            >
+              <div>
+                <h4
+                  className="
+                    text-base
+                    font-semibold
+                  "
+                >
+                  Music Library
+                </h4>
+
+                <p
+                  className={`
+                    mt-1
+                    text-xs
+                    ${textSecondary}
+                  `}
+                >
+                  {songs.length} song
+                  {songs.length === 1
+                    ? ""
+                    : "s"} in the library.
+                </p>
+              </div>
+
+              <button
+                type="button"
+                onClick={
+                  fetchSongs
+                }
+                disabled={
+                  loadingSongs
+                }
+                className="
+                  h-9
+                  px-3
+                  rounded-xl
+                  border
+                  border-[#ddd8ed]
+                  flex
+                  items-center
+                  justify-center
+                  gap-2
+                  text-xs
+                  font-semibold
+                  text-[#6425ed]
+                  hover:bg-[#f6f2ff]
+                  transition
+                  disabled:opacity-50
+                "
+              >
+                <RefreshCw
+                  size={14}
+                  className={
+                    loadingSongs
+                      ? "animate-spin"
+                      : ""
+                  }
+                />
+
+                Refresh
+              </button>
+            </div>
+
+
+            {loadingSongs ? (
+              <div
+                className="
+                  min-h-[180px]
+                  flex
+                  items-center
+                  justify-center
+                "
+              >
+                <Loader2
+                  size={25}
+                  className="
+                    animate-spin
+                    text-[#7c3aed]
+                  "
+                />
+              </div>
+            ) : songs.length === 0 ? (
+              <div
+                className="
+                  min-h-[180px]
+                  flex
+                  flex-col
+                  items-center
+                  justify-center
+                  text-center
+                  px-5
+                "
+              >
+                <div
+                  className="
+                    h-14
+                    w-14
+                    rounded-2xl
+                    bg-[#f0eaff]
+                    flex
+                    items-center
+                    justify-center
+                    mb-3
+                  "
+                >
+                  <Music
+                    size={25}
+                    className="text-[#7c3aed]"
+                  />
+                </div>
+
+                <h5
+                  className="
+                    text-sm
+                    font-semibold
+                  "
+                >
+                  No songs uploaded
+                </h5>
+
+                <p
+                  className={`
+                    mt-1
+                    text-xs
+                    ${textSecondary}
+                  `}
+                >
+                  Upload your first study song
+                  using the form above.
+                </p>
+              </div>
+            ) : (
+              <div
+                className="
+                  overflow-x-auto
+                "
+              >
+                <table
+                  className="
+                    w-full
+                    min-w-[850px]
+                  "
+                >
+                  <thead>
+                    <tr
+                      className={`
+                        border-t
+                        border-b
+                        ${borderColor}
+                        ${darkMode
+                          ? "bg-[#171725]"
+                          : "bg-[#faf9ff]"
+                        }
+                      `}
+                    >
+                      <th
+                        className="
+                          px-5
+                          py-3
+                          text-left
+                          text-[11px]
+                          font-semibold
+                          text-[#7a8195]
+                          uppercase
+                        "
+                      >
+                        Song
+                      </th>
+
+                      <th
+                        className="
+                          px-5
+                          py-3
+                          text-left
+                          text-[11px]
+                          font-semibold
+                          text-[#7a8195]
+                          uppercase
+                        "
+                      >
+                        Artist
+                      </th>
+
+                      <th
+                        className="
+                          px-5
+                          py-3
+                          text-left
+                          text-[11px]
+                          font-semibold
+                          text-[#7a8195]
+                          uppercase
+                        "
+                      >
+                        Order
+                      </th>
+
+                      <th
+                        className="
+                          px-5
+                          py-3
+                          text-left
+                          text-[11px]
+                          font-semibold
+                          text-[#7a8195]
+                          uppercase
+                        "
+                      >
+                        Status
+                      </th>
+
+                      <th
+                        className="
+                          px-5
+                          py-3
+                          text-right
+                          text-[11px]
+                          font-semibold
+                          text-[#7a8195]
+                          uppercase
+                        "
+                      >
+                        Actions
+                      </th>
+                    </tr>
+                  </thead>
+
+
+                  <tbody>
+                    {songs.map(
+                      (song) => (
+                        <tr
+                          key={
+                            song._id
+                          }
+                          className={`
+                            border-b
+                            ${borderColor}
+                            transition
+                            hover:bg-[#faf9ff]
+                            ${darkMode
+                              ? "hover:bg-[#171725]"
+                              : ""
+                            }
+                          `}
+                        >
+                          <td
+                            className="
+                              px-5
+                              py-4
+                            "
+                          >
+                            <div
+                              className="
+                                flex
+                                items-center
+                                gap-3
+                              "
+                            >
+                              <div
+                                className="
+                                  h-11
+                                  w-11
+                                  rounded-xl
+                                  overflow-hidden
+                                  bg-[#eee8ff]
+                                  flex
+                                  items-center
+                                  justify-center
+                                  shrink-0
+                                "
+                              >
+                                {song.thumbnailUrl ? (
+                                  <img
+                                    src={
+                                      song.thumbnailUrl
+                                    }
+                                    alt=""
+                                    className="
+                                      h-full
+                                      w-full
+                                      object-cover
+                                    "
+                                  />
+                                ) : (
+                                  <Music
+                                    size={18}
+                                    className="text-[#7c3aed]"
+                                  />
+                                )}
+                              </div>
+
+                              <div
+                                className="
+                                  min-w-0
+                                "
+                              >
+                                <p
+                                  className="
+                                    text-sm
+                                    font-semibold
+                                    truncate
+                                    max-w-[260px]
+                                  "
+                                  title={
+                                    song.title
+                                  }
+                                >
+                                  {
+                                    song.title
+                                  }
+                                </p>
+
+                                <a
+                                  href={
+                                    song.audioUrl
+                                  }
+                                  target="_blank"
+                                  rel="noreferrer"
+                                  className="
+                                    mt-0.5
+                                    inline-flex
+                                    items-center
+                                    gap-1
+                                    text-[11px]
+                                    text-[#6c2cf5]
+                                    hover:underline
+                                  "
+                                >
+                                  <Play
+                                    size={11}
+                                    fill="currentColor"
+                                  />
+
+                                  Preview audio
+                                </a>
+                              </div>
+                            </div>
+                          </td>
+
+
+                          <td
+                            className={`
+                              px-5
+                              py-4
+                              text-sm
+                              ${textSecondary}
+                            `}
+                          >
+                            {song.artist ||
+                              "StudyGem"}
+                          </td>
+
+
+                          <td
+                            className="
+                              px-5
+                              py-4
+                              text-sm
+                              font-semibold
+                            "
+                          >
+                            {song.order ||
+                              0}
+                          </td>
+
+
+                          <td
+                            className="
+                              px-5
+                              py-4
+                            "
+                          >
+                            <button
+                              type="button"
+                              onClick={() =>
+                                handleToggleSong(
+                                  song._id
+                                )
+                              }
+                              disabled={
+                                togglingSongId ===
+                                song._id
+                              }
+                              className={`
+                                inline-flex
+                                items-center
+                                gap-2
+                                rounded-full
+                                px-3
+                                py-1.5
+                                text-xs
+                                font-semibold
+                                transition
+                                ${
+                                  song.isActive
+                                    ? "bg-green-50 text-green-600"
+                                    : "bg-gray-100 text-gray-500"
+                                }
+                              `}
+                            >
+                              {togglingSongId ===
+                              song._id ? (
+                                <Loader2
+                                  size={13}
+                                  className="animate-spin"
+                                />
+                              ) : (
+                                <span
+                                  className="
+                                    h-1.5
+                                    w-1.5
+                                    rounded-full
+                                    bg-current
+                                  "
+                                />
+                              )}
+
+                              {song.isActive
+                                ? "Active"
+                                : "Inactive"}
+                            </button>
+                          </td>
+
+
+                          <td
+                            className="
+                              px-5
+                              py-4
+                            "
+                          >
+                            <div
+                              className="
+                                flex
+                                items-center
+                                justify-end
+                                gap-2
+                              "
+                            >
+                              <a
+                                href={
+                                  song.audioUrl
+                                }
+                                target="_blank"
+                                rel="noreferrer"
+                                className="
+                                  h-9
+                                  w-9
+                                  rounded-lg
+                                  flex
+                                  items-center
+                                  justify-center
+                                  bg-[#f0eaff]
+                                  text-[#6425ed]
+                                  hover:bg-[#e6ddff]
+                                  transition
+                                "
+                                title="Preview"
+                              >
+                                <Play
+                                  size={15}
+                                  fill="currentColor"
+                                />
+                              </a>
+
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  handleDeleteSong(
+                                    song._id
+                                  )
+                                }
+                                disabled={
+                                  deletingSongId ===
+                                  song._id
+                                }
+                                className="
+                                  h-9
+                                  w-9
+                                  rounded-lg
+                                  flex
+                                  items-center
+                                  justify-center
+                                  bg-red-50
+                                  text-red-500
+                                  hover:bg-red-100
+                                  transition
+                                  disabled:opacity-50
+                                "
+                                title="Delete"
+                              >
+                                {deletingSongId ===
+                                song._id ? (
+                                  <Loader2
+                                    size={15}
+                                    className="animate-spin"
+                                  />
+                                ) : (
+                                  <Trash2
+                                    size={15}
+                                  />
+                                )}
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      )
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
         </section>
 
 
@@ -2455,6 +4921,7 @@ const AdminDashboard = ({ onLogout }) => {
                   </tr>
                 </thead>
 
+
                 <tbody>
                   {filteredPYQs.map(
                     (item) => (
@@ -2536,6 +5003,7 @@ const AdminDashboard = ({ onLogout }) => {
                           </div>
                         </td>
 
+
                         <td
                           className="
                             px-5
@@ -2560,6 +5028,7 @@ const AdminDashboard = ({ onLogout }) => {
                           </span>
                         </td>
 
+
                         <td
                           className={`
                             px-5
@@ -2572,6 +5041,7 @@ const AdminDashboard = ({ onLogout }) => {
                             item.subject
                           }
                         </td>
+
 
                         <td
                           className="
@@ -2586,6 +5056,7 @@ const AdminDashboard = ({ onLogout }) => {
                           }
                         </td>
 
+
                         <td
                           className={`
                             px-5
@@ -2598,6 +5069,7 @@ const AdminDashboard = ({ onLogout }) => {
                             item.createdAt
                           )}
                         </td>
+
 
                         <td
                           className="
@@ -2651,6 +5123,7 @@ const AdminDashboard = ({ onLogout }) => {
                             </span>
                           </div>
                         </td>
+
 
                         <td
                           className="
