@@ -88,8 +88,8 @@ The project can use modern and scalable technologies such as:
 
 ```bash
 StudyGem/
-├── client/                 # frontend application
-├── server/                 # backend logic and APIs
+├── frontend/                 # frontend application
+├── backend/                 # backend logic and APIs
 ├── src/                    # shared source code
 ├── public/                 # static assets
 ├── docs/                   # project documentation
