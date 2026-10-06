@@ -3,7 +3,7 @@ const streamifier = require("streamifier");
 
 const cloudinary = require("cloudinary").v2;
 
-const Pyq = require("../models/Pyq");
+const Pyq = require("../models/PYQ");
 
 // ======================================================
 // CLOUDINARY CONFIG
