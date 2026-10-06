@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import Navbar from "../components/Navbar";
 
 const API_URL =
-  import.meta.env.VITE_API_URL || "http://localhost:5000";
+  import.meta.env.VITE_API_URL || "https://studygem-your-knowledge-your-growth.onrender.com/api";
 
 const categories = [
   {
@@ -130,7 +130,7 @@ function Notes({
       setLoading(true);
       setError("");
 
-      let url = `${API_URL}/api/current-affairs?language=${selectedLanguage}`;
+      let url = `${API_URL}/current-affairs?language=${selectedLanguage}`;
 
       if (activeCategory !== "all") {
         const selectedCategory = categories.find(

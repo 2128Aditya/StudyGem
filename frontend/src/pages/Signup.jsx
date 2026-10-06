@@ -58,7 +58,7 @@ const Signup = ({ onLogin }) => {
 
   const API_BASE_URL =
 
-    import.meta.env.VITE_API_URL ||  "https://studygem-your-knowledge-your-growth.onrender.com/api/auth";
+    import.meta.env.VITE_API_URL ||  "https://studygem-your-knowledge-your-growth.onrender.com/api";
 
   // =========================================================
 
@@ -128,7 +128,7 @@ const Signup = ({ onLogin }) => {
 
       setLoading(true);
 
-      const response = await fetch(`${API_BASE_URL}/signup`, {
+      const response = await fetch(`${API_BASE_URL}/auth/signup`, {
 
         method: "POST",
 
@@ -220,7 +220,7 @@ const Signup = ({ onLogin }) => {
 
       setLoading(true);
 
-      const response = await fetch(`${API_BASE_URL}/verify-otp`, {
+      const response = await fetch(`${API_BASE_URL}/auth/verify-otp`, {
 
         method: "POST",
 
@@ -302,7 +302,7 @@ const Signup = ({ onLogin }) => {
 
       setLoading(true);
 
-      const response = await fetch(`${API_BASE_URL}/resend-otp`, {
+      const response = await fetch(`${API_BASE_URL}/auth/resend-otp`, {
 
         method: "POST",
 

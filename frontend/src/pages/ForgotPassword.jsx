@@ -31,7 +31,7 @@ const ForgotPassword = ({ onLogin }) => {
   const [loading, setLoading] = useState(false);
 
   const API_BASE_URL =
-    import.meta.env.VITE_API_URL || "https://studygem-your-knowledge-your-growth.onrender.com/api/auth";
+    import.meta.env.VITE_API_URL || "https://studygem-your-knowledge-your-growth.onrender.com/api";
 
   // ==========================================
   // STEP 1 - SEND OTP
@@ -50,7 +50,7 @@ const ForgotPassword = ({ onLogin }) => {
 
     try {
       const response = await fetch(
-        `${API_BASE_URL}/forgot-password`,
+        `${API_BASE_URL}/auth/forgot-password`,
         {
           method: "POST",
           headers: {
@@ -102,7 +102,7 @@ const ForgotPassword = ({ onLogin }) => {
 
     try {
       const response = await fetch(
-        `${API_BASE_URL}/verify-reset-otp`,
+        `${API_BASE_URL}/auth/verify-reset-otp`,
         {
           method: "POST",
           headers: {
@@ -164,7 +164,7 @@ const ForgotPassword = ({ onLogin }) => {
 
     try {
       const response = await fetch(
-        `${API_BASE_URL}/reset-password`,
+        `${API_BASE_URL}/auth/reset-password`,
         {
           method: "POST",
           headers: {

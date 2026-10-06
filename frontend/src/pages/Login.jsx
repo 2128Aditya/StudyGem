@@ -25,7 +25,7 @@ const Login = ({ onSignup, onForgotPassword, onLogin }) => {
   const [loading, setLoading] = useState(false);
 
   const API_BASE_URL =
-    import.meta.env.VITE_API_URL ||  "https://studygem-your-knowledge-your-growth.onrender.com/api/auth";
+    import.meta.env.VITE_API_URL ||  "https://studygem-your-knowledge-your-growth.onrender.com/api";
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -39,7 +39,7 @@ const Login = ({ onSignup, onForgotPassword, onLogin }) => {
       setLoading(true);
       setError("");
 
-      const response = await fetch(`${API_BASE_URL}/login`, {
+      const response = await fetch(`${API_BASE_URL}/auth/login`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
