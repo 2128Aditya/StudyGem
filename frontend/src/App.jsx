@@ -15,6 +15,7 @@ import PYQ from "./pages/PYQ";
 import Notes from "./pages/Notes";
 import Leaderboard from "./pages/Leaderboard";
 import AdminDashboard from "./pages/AdminDashboard";
+import Footer from "./components/Footer";
 
 function App() {
   // =========================
@@ -51,12 +52,6 @@ function App() {
   // =========================
 
   const [testResult, setTestResult] = useState(null);
-
-  // =========================
-  // PROFILE REFRESH
-  // =========================
-
-  const [profileRefreshKey, setProfileRefreshKey] = useState(0);
 
   // =========================
   // LOGOUT
@@ -166,14 +161,7 @@ function App() {
       if (!token) {
         console.error("StudyGem token not found.");
 
-        const finalResult = {
-          ...resultData,
-          testConfig:
-            resultData?.testConfig || testConfig,
-        };
-
-        setTestResult(finalResult);
-        setProfileRefreshKey((prev) => prev + 1);
+        setTestResult(resultData);
         setPage("mock-result");
 
         return;
@@ -183,50 +171,21 @@ function App() {
         import.meta.env.VITE_API_URL ||
         "http://localhost:5000/api";
 
-      // MockTestInterface may not send testConfig
-      // back inside resultData.
-      // Therefore use App-level testConfig as fallback.
-
-      const finalTestConfig =
-        resultData?.testConfig || testConfig;
-
-      const finalQuestions = Array.isArray(
-        resultData?.questions
-      )
-        ? resultData.questions
-        : [];
-
-      const finalAnswers =
-        resultData?.answers &&
-        typeof resultData.answers === "object"
-          ? resultData.answers
-          : {};
-
-      const finalTimeTakenSeconds =
-        Number(resultData?.timeTakenSeconds) || 0;
-
-      console.log("Saving Mock Test Attempt:", {
-        testConfig: finalTestConfig,
-        questions: finalQuestions,
-        answers: finalAnswers,
-        timeTakenSeconds: finalTimeTakenSeconds,
-      });
-
       const response = await fetch(
         `${API_BASE_URL}/mock/attempt`,
         {
           method: "POST",
-
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
           },
 
           body: JSON.stringify({
-            testConfig: finalTestConfig,
-            questions: finalQuestions,
-            answers: finalAnswers,
-            timeTakenSeconds: finalTimeTakenSeconds,
+            testConfig: resultData.testConfig,
+            questions: resultData.questions,
+            answers: resultData.answers,
+            timeTakenSeconds:
+              resultData.timeTakenSeconds || 0,
           }),
         }
       );
@@ -236,8 +195,7 @@ function App() {
       if (!response.ok || !data.success) {
         console.error(
           "Failed to save mock result:",
-          data.message || "Unknown error",
-          data
+          data.message || "Unknown error"
         );
       } else {
         console.log(
@@ -246,21 +204,7 @@ function App() {
         );
       }
 
-      // Keep the complete result for result page.
-
-      const finalResult = {
-        ...resultData,
-        testConfig: finalTestConfig,
-        questions: finalQuestions,
-        answers: finalAnswers,
-        timeTakenSeconds: finalTimeTakenSeconds,
-      };
-
-      setTestResult(finalResult);
-
-      // Refresh Profile stats after every completed test.
-      setProfileRefreshKey((prev) => prev + 1);
-
+      setTestResult(resultData);
       setPage("mock-result");
     } catch (error) {
       console.error(
@@ -268,17 +212,7 @@ function App() {
         error
       );
 
-      const finalResult = {
-        ...resultData,
-        testConfig:
-          resultData?.testConfig || testConfig,
-      };
-
-      setTestResult(finalResult);
-
-      // Refresh Profile stats even if API request fails.
-      setProfileRefreshKey((prev) => prev + 1);
-
+      setTestResult(resultData);
       setPage("mock-result");
     }
   };
@@ -309,7 +243,6 @@ function App() {
 
   return (
     <div className="min-h-screen">
-
       {/* =====================================================
           LOGIN
       ===================================================== */}
@@ -383,7 +316,6 @@ function App() {
 
       {page === "profile" && (
         <Profile
-          profileRefreshKey={profileRefreshKey}
           onBack={openHome}
           onLogout={handleLogout}
           onHome={openHome}
@@ -412,8 +344,6 @@ function App() {
           onRoadmaps={openRoadmaps}
           onTarget={openTarget}
           onPYQ={openPYQ}
-          onNotes={openNotes}
-          onLeaderboard={openLeaderboard}
           onStartTest={startMockTest}
         />
       )}
@@ -434,8 +364,6 @@ function App() {
           onRoadmaps={openRoadmaps}
           onTarget={openTarget}
           onPYQ={openPYQ}
-          onNotes={openNotes}
-          onLeaderboard={openLeaderboard}
           onFinishTest={finishMockTest}
         />
       )}
@@ -568,6 +496,24 @@ function App() {
         />
       )}
 
+      {/* =====================================================
+          FOOTER
+      ===================================================== */}
+
+      {page !== "login" &&
+        page !== "signup" &&
+        page !== "forgot" &&
+        page !== "admin-dashboard" && (
+          <Footer
+            onHome={openHome}
+            onMockTests={openMockTests}
+            onAI={openAI}
+            onRoadmaps={openRoadmaps}
+            onPYQ={openPYQ}
+            onNotes={openNotes}
+            onLeaderboard={openLeaderboard}
+          />
+        )}
     </div>
   );
 }
