@@ -38,7 +38,7 @@ function Navbar({
       page: "home",
     },
     {
-      label: "Notes",
+      label: "Current Affairs",
       icon: BookOpen,
       page: "notes",
     },

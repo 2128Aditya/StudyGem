@@ -166,6 +166,7 @@ function AIAssistant({
   onRoadmaps,
   onTarget,
   onPYQ,
+  onLeaderboard,
 }) {
   const [messages, setMessages] = useState(() => [
     createWelcomeMessage(),
@@ -441,6 +442,7 @@ function AIAssistant({
   onRoadmaps={onRoadmaps}
   onTarget={onTarget}
   onPYQ={onPYQ}
+  onLeaderboard={onLeaderboard}
         activePage="ai"
       />
 

@@ -787,6 +787,7 @@ function MockTests({
   onRoadmaps,
   onTarget,
   onPYQ,
+  onLeaderboard,
 }) {
   const [exam, setExam] = useState("upsc");
   const [selectedSubjects, setSelectedSubjects] = useState(["general"]);
@@ -1032,6 +1033,7 @@ function MockTests({
   onRoadmaps={onRoadmaps}
   onTarget={onTarget}
   onPYQ={onPYQ}
+  onLeaderboard={onLeaderboard}
   activePage="mock"
 />
 

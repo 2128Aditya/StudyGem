@@ -33,6 +33,12 @@ const userSchema = new mongoose.Schema(
       trim: true,
     },
 
+    // Profile photo
+    profileImage: {
+      type: String,
+      default: "",
+    },
+
     email: {
       type: String,
       required: true,

@@ -41,6 +41,7 @@ const PYQ = ({
   onRoadmaps,
   onTarget,
   onPYQ,
+  onLeaderboard,
 }) => {
   const [activeCategory, setActiveCategory] = useState("All");
 
@@ -568,6 +569,7 @@ const PYQ = ({
         onRoadmaps={onRoadmaps}
         onTarget={onTarget}
         onPYQ={onPYQ}
+        onLeaderboard={onLeaderboard}
         activePage="pyq"
       />
 

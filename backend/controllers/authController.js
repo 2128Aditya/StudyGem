@@ -133,9 +133,7 @@ const signup = async (req, res) => {
 
     const otp = generateOTP();
 
-    const otpExpires = new Date(
-      Date.now() + 10 * 60 * 1000
-    );
+    const otpExpires = new Date(Date.now() + 10 * 60 * 1000);
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
@@ -255,6 +253,7 @@ const verifyOTP = async (req, res) => {
         email: user.email,
         role: user.role,
         isVerified: user.isVerified,
+        profileImage: user.profileImage || "",
       },
     });
   } catch (error) {
@@ -337,6 +336,7 @@ const login = async (req, res) => {
         email: user.email,
         role: user.role,
         isVerified: user.isVerified,
+        profileImage: user.profileImage || "",
       },
     });
   } catch (error) {
@@ -385,9 +385,7 @@ const resendOTP = async (req, res) => {
 
     const otp = generateOTP();
 
-    const otpExpires = new Date(
-      Date.now() + 10 * 60 * 1000
-    );
+    const otpExpires = new Date(Date.now() + 10 * 60 * 1000);
 
     user.otp = otp;
     user.otpExpires = otpExpires;
@@ -443,9 +441,7 @@ const forgotPassword = async (req, res) => {
 
     const otp = generateOTP();
 
-    const otpExpires = new Date(
-      Date.now() + 10 * 60 * 1000
-    );
+    const otpExpires = new Date(Date.now() + 10 * 60 * 1000);
 
     user.otp = otp;
     user.otpExpires = otpExpires;
@@ -474,12 +470,9 @@ const forgotPassword = async (req, res) => {
 };
 
 // ==========================================
-// VERIFY RESET PASSWORD OTP
-// ==========================================
-
-// ==========================================
 // VERIFY RESET OTP
 // ==========================================
+
 const verifyResetOTP = async (req, res) => {
   try {
     const { email, otp } = req.body;
@@ -632,7 +625,7 @@ const updateProfile = async (req, res) => {
       });
     }
 
-    const { name } = req.body;
+    const { name, profileImage } = req.body;
 
     if (!name || !name.trim()) {
       return res.status(400).json({
@@ -652,6 +645,10 @@ const updateProfile = async (req, res) => {
 
     user.name = name.trim();
 
+    if (typeof profileImage === "string") {
+      user.profileImage = profileImage;
+    }
+
     await user.save();
 
     return res.status(200).json({
@@ -663,6 +660,7 @@ const updateProfile = async (req, res) => {
         email: user.email,
         role: user.role,
         isVerified: user.isVerified,
+        profileImage: user.profileImage || "",
       },
     });
   } catch (error) {
@@ -689,4 +687,4 @@ module.exports = {
   verifyResetOTP,
   resetPassword,
   updateProfile,
-};
+};  

@@ -699,6 +699,7 @@ function Roadmaps({
   onRoadmaps,
   onTarget,
   onPYQ,
+  onLeaderboard,
 }) {
   const [form, setForm] = useState({
     learning: "",
@@ -928,6 +929,7 @@ function Roadmaps({
   onRoadmaps={onRoadmaps}
   onTarget={onTarget}
   onPYQ={onPYQ}
+  onLeaderboard={onLeaderboard}
         activePage="roadmaps"
       />
 

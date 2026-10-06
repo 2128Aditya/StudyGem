@@ -1359,6 +1359,8 @@ function Target({
   onAI,
   onProfile,
   onRoadmaps,
+  onLeaderboard,
+  onPyqs,
 }) {
   /* =======================================================
      TARGET
@@ -2083,6 +2085,8 @@ function Target({
         onAI={onAI}
         onProfile={onProfile}
         onRoadmaps={onRoadmaps}
+        onLeaderboard={onLeaderboard}
+        onPyqs={onPyqs}
         activePage="target"
       />
 

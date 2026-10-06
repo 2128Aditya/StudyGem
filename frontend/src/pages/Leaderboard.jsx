@@ -136,18 +136,18 @@ function Leaderboard({
 
   return (
     <div className="leaderboard-page">
-      <Navbar
-        onLogout={onLogout}
-        onHome={onHome}
-        onMockTests={onMockTests}
-        onAI={onAI}
-        onProfile={onProfile}
-        onRoadmaps={onRoadmaps}
-        onTarget={onTarget}
-        onPYQ={onPYQ}
-        activePage="leaderboard"
-      />
-
+<Navbar
+  onLogout={onLogout}
+  onHome={onHome}
+  onMockTests={onMockTests}
+  onAI={onAI}
+  onProfile={onProfile}
+  onRoadmaps={onRoadmaps}
+  onTarget={onTarget}
+  onPYQ={onPYQ}
+  onLeaderboard={onLeaderboard}
+  activePage="leaderboard"
+/>
       <main className="leaderboard-main">
         <section className="leaderboard-hero">
           <div className="hero-background">
