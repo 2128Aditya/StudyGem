@@ -1,6 +1,6 @@
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
-const nodemailer = require("nodemailer");
+const { Resend } = require("resend");
 
 const User = require("../models/User");
 
@@ -8,15 +8,8 @@ const User = require("../models/User");
 // EMAIL CONFIGURATION
 // ==========================================
 
-const transporter = nodemailer.createTransport({
-  host: "smtp.gmail.com",
-  port: 587,
-  secure: false,
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS,
-  },
-});
+const resend = new Resend(process.env.RESEND_API_KEY);
+
 // ==========================================
 // GENERATE OTP
 // ==========================================
@@ -34,11 +27,12 @@ const sendOTPEmail = async (
   otp,
   subject = "StudyGem Email Verification"
 ) => {
-  await transporter.sendMail({
-    from: `"StudyGem" <${process.env.EMAIL_USER}>`,
+  const { error } = await resend.emails.send({
+    from:
+      process.env.EMAIL_FROM ||
+      "StudyGem <onboarding@resend.dev>",
     to: email,
     subject: subject,
-
     html: `
       <div style="
         font-family: Arial, sans-serif;
@@ -48,7 +42,6 @@ const sendOTPEmail = async (
         background: #f8f7ff;
         border-radius: 15px;
       ">
-
         <h2 style="color: #7c3aed;">
           StudyGem
         </h2>
@@ -78,18 +71,25 @@ const sendOTPEmail = async (
         </p>
 
         <p style="color: #666;">
-          If you did not request this OTP, you can safely ignore this email.
+          If you did not request this OTP, you can safely ignore
+          this email.
         </p>
 
         <hr />
 
         <p style="font-size: 12px; color: #888;">
-          © ${new Date().getFullYear()} StudyGem. All rights reserved.
+          © ${new Date().getFullYear()} StudyGem.
+          All rights reserved.
         </p>
-
       </div>
     `,
   });
+
+  if (error) {
+    throw new Error(
+      error.message || "Failed to send email"
+    );
+  }
 };
 
 // ==========================================
@@ -106,7 +106,12 @@ const signup = async (req, res) => {
       role,
     } = req.body;
 
-    if (!name || !email || !password || !confirmPassword) {
+    if (
+      !name ||
+      !email ||
+      !password ||
+      !confirmPassword
+    ) {
       return res.status(400).json({
         success: false,
         message: "All fields are required",
@@ -123,7 +128,8 @@ const signup = async (req, res) => {
     if (password.length < 6) {
       return res.status(400).json({
         success: false,
-        message: "Password must be at least 6 characters",
+        message:
+          "Password must be at least 6 characters",
       });
     }
 
@@ -134,7 +140,8 @@ const signup = async (req, res) => {
     if (existingUser && existingUser.isVerified) {
       return res.status(409).json({
         success: false,
-        message: "An account with this email already exists",
+        message:
+          "An account with this email already exists",
       });
     }
 
@@ -171,7 +178,11 @@ const signup = async (req, res) => {
       });
     }
 
-    await sendOTPEmail(user.email, otp);
+    await sendOTPEmail(
+      user.email,
+      otp,
+      "StudyGem - Email Verification OTP"
+    );
 
     return res.status(201).json({
       success: true,
@@ -295,7 +306,8 @@ const login = async (req, res) => {
     if (!email || !password) {
       return res.status(400).json({
         success: false,
-        message: "Email and password are required",
+        message:
+          "Email and password are required",
       });
     }
 
@@ -362,7 +374,8 @@ const login = async (req, res) => {
 
     return res.status(500).json({
       success: false,
-      message: "Something went wrong during login",
+      message:
+        "Something went wrong during login",
       error: error.message,
     });
   }
@@ -455,7 +468,8 @@ const forgotPassword = async (req, res) => {
     if (!user) {
       return res.status(404).json({
         success: false,
-        message: "No account found with this email",
+        message:
+          "No account found with this email",
       });
     }
 
@@ -506,7 +520,8 @@ const verifyResetOTP = async (req, res) => {
     if (!email || !otp) {
       return res.status(400).json({
         success: false,
-        message: "Email and OTP are required",
+        message:
+          "Email and OTP are required",
       });
     }
 
@@ -753,24 +768,25 @@ const getAdminStats = async (req, res) => {
     } catch (error) {
       return res.status(401).json({
         success: false,
-        message: "Invalid or expired token.",
+        message:
+          "Invalid or expired token.",
       });
     }
 
     if (decoded.role !== "admin") {
       return res.status(403).json({
         success: false,
-        message: "Admin access required.",
+        message:
+          "Admin access required.",
       });
     }
 
     const now = new Date();
 
-    const sevenDaysAgo =
-      new Date(
-        now.getTime() -
-          7 * 24 * 60 * 60 * 1000
-      );
+    const sevenDaysAgo = new Date(
+      now.getTime() -
+        7 * 24 * 60 * 60 * 1000
+    );
 
     const totalUsers =
       await User.countDocuments({
@@ -824,19 +840,17 @@ const getAdminStats = async (req, res) => {
       index >= 0;
       index--
     ) {
-      const start =
-        new Date(
-          now.getFullYear(),
-          now.getMonth() - index,
-          1
-        );
+      const start = new Date(
+        now.getFullYear(),
+        now.getMonth() - index,
+        1
+      );
 
-      const end =
-        new Date(
-          now.getFullYear(),
-          now.getMonth() - index + 1,
-          1
-        );
+      const end = new Date(
+        now.getFullYear(),
+        now.getMonth() - index + 1,
+        1
+      );
 
       const count =
         await User.countDocuments({
