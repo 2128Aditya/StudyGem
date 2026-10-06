@@ -1,14 +1,14 @@
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
-const { Resend } = require("resend");
 
 const User = require("../models/User");
 
 // ==========================================
-// EMAIL CONFIGURATION
+// EMAIL CONFIGURATION - EMAILJS
 // ==========================================
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+const EMAILJS_API_URL =
+  "https://api.emailjs.com/api/v1.0/email/send";
 
 // ==========================================
 // GENERATE OTP
@@ -19,77 +19,57 @@ const generateOTP = () => {
 };
 
 // ==========================================
-// SEND OTP EMAIL
+// SEND OTP EMAIL - EMAILJS
 // ==========================================
 
 const sendOTPEmail = async (
   email,
   otp,
-  subject = "StudyGem Email Verification"
+  name = "User"
 ) => {
-  const { error } = await resend.emails.send({
-    from:
-      process.env.EMAIL_FROM ||
-      "StudyGem <onboarding@resend.dev>",
-    to: email,
-    subject: subject,
-    html: `
-      <div style="
-        font-family: Arial, sans-serif;
-        max-width: 600px;
-        margin: auto;
-        padding: 30px;
-        background: #f8f7ff;
-        border-radius: 15px;
-      ">
-        <h2 style="color: #7c3aed;">
-          StudyGem
-        </h2>
-
-        <h3>Email Verification</h3>
-
-        <p>
-          Your StudyGem verification OTP is:
-        </p>
-
-        <div style="
-          font-size: 32px;
-          font-weight: bold;
-          letter-spacing: 8px;
-          color: #7c3aed;
-          background: white;
-          padding: 20px;
-          text-align: center;
-          border-radius: 10px;
-          margin: 20px 0;
-        ">
-          ${otp}
-        </div>
-
-        <p>
-          This OTP is valid for <strong>10 minutes</strong>.
-        </p>
-
-        <p style="color: #666;">
-          If you did not request this OTP, you can safely ignore
-          this email.
-        </p>
-
-        <hr />
-
-        <p style="font-size: 12px; color: #888;">
-          © ${new Date().getFullYear()} StudyGem.
-          All rights reserved.
-        </p>
-      </div>
-    `,
-  });
-
-  if (error) {
+  if (
+    !process.env.EMAILJS_SERVICE_ID ||
+    !process.env.EMAILJS_TEMPLATE_ID ||
+    !process.env.EMAILJS_PUBLIC_KEY
+  ) {
     throw new Error(
-      error.message || "Failed to send email"
+      "EmailJS environment variables are missing"
     );
   }
+
+  const response = await fetch(EMAILJS_API_URL, {
+    method: "POST",
+
+    headers: {
+      "Content-Type": "application/json",
+    },
+
+    body: JSON.stringify({
+      service_id: process.env.EMAILJS_SERVICE_ID,
+
+      template_id:
+        process.env.EMAILJS_TEMPLATE_ID,
+
+      user_id:
+        process.env.EMAILJS_PUBLIC_KEY,
+
+      template_params: {
+        email: email,
+        name: name,
+        otp: otp,
+      },
+    }),
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+
+    throw new Error(
+      `EmailJS Error: ${errorText}`
+    );
+  }
+
+  return true;
 };
 
 // ==========================================
@@ -137,7 +117,10 @@ const signup = async (req, res) => {
       email: email.toLowerCase(),
     });
 
-    if (existingUser && existingUser.isVerified) {
+    if (
+      existingUser &&
+      existingUser.isVerified
+    ) {
       return res.status(409).json({
         success: false,
         message:
@@ -151,13 +134,12 @@ const signup = async (req, res) => {
       Date.now() + 10 * 60 * 1000
     );
 
-    const hashedPassword = await bcrypt.hash(
-      password,
-      10
-    );
+    const hashedPassword =
+      await bcrypt.hash(password, 10);
 
     let user;
 
+    // Existing unverified user
     if (existingUser) {
       existingUser.name = name;
       existingUser.password = hashedPassword;
@@ -167,6 +149,7 @@ const signup = async (req, res) => {
 
       user = await existingUser.save();
     } else {
+      // New user
       user = await User.create({
         name,
         email: email.toLowerCase(),
@@ -178,15 +161,17 @@ const signup = async (req, res) => {
       });
     }
 
+    // Send OTP
     await sendOTPEmail(
       user.email,
       otp,
-      "StudyGem - Email Verification OTP"
+      user.name
     );
 
     return res.status(201).json({
       success: true,
-      message: "OTP sent successfully to your email",
+      message:
+        "OTP sent successfully to your email",
       email: user.email,
     });
   } catch (error) {
@@ -194,7 +179,8 @@ const signup = async (req, res) => {
 
     return res.status(500).json({
       success: false,
-      message: "Something went wrong during signup",
+      message:
+        "Something went wrong during signup",
       error: error.message,
     });
   }
@@ -229,7 +215,8 @@ const verifyOTP = async (req, res) => {
     if (user.isVerified) {
       return res.status(400).json({
         success: false,
-        message: "Email is already verified",
+        message:
+          "Email is already verified",
       });
     }
 
@@ -271,7 +258,8 @@ const verifyOTP = async (req, res) => {
 
     return res.status(200).json({
       success: true,
-      message: "Email verified successfully",
+      message:
+        "Email verified successfully",
       token,
 
       user: {
@@ -280,11 +268,15 @@ const verifyOTP = async (req, res) => {
         email: user.email,
         role: user.role,
         isVerified: user.isVerified,
-        profileImage: user.profileImage || "",
+        profileImage:
+          user.profileImage || "",
       },
     });
   } catch (error) {
-    console.error("Verify OTP Error:", error);
+    console.error(
+      "Verify OTP Error:",
+      error
+    );
 
     return res.status(500).json({
       success: false,
@@ -318,14 +310,16 @@ const login = async (req, res) => {
     if (!user) {
       return res.status(401).json({
         success: false,
-        message: "Invalid email or password",
+        message:
+          "Invalid email or password",
       });
     }
 
     if (!user.isVerified) {
       return res.status(403).json({
         success: false,
-        message: "Please verify your email first",
+        message:
+          "Please verify your email first",
         needsVerification: true,
       });
     }
@@ -339,7 +333,8 @@ const login = async (req, res) => {
     if (!isPasswordCorrect) {
       return res.status(401).json({
         success: false,
-        message: "Invalid email or password",
+        message:
+          "Invalid email or password",
       });
     }
 
@@ -366,7 +361,8 @@ const login = async (req, res) => {
         email: user.email,
         role: user.role,
         isVerified: user.isVerified,
-        profileImage: user.profileImage || "",
+        profileImage:
+          user.profileImage || "",
       },
     });
   } catch (error) {
@@ -410,7 +406,8 @@ const resendOTP = async (req, res) => {
     if (user.isVerified) {
       return res.status(400).json({
         success: false,
-        message: "Email is already verified",
+        message:
+          "Email is already verified",
       });
     }
 
@@ -428,15 +425,19 @@ const resendOTP = async (req, res) => {
     await sendOTPEmail(
       user.email,
       otp,
-      "StudyGem - New Verification OTP"
+      user.name
     );
 
     return res.status(200).json({
       success: true,
-      message: "New OTP sent successfully",
+      message:
+        "New OTP sent successfully",
     });
   } catch (error) {
-    console.error("Resend OTP Error:", error);
+    console.error(
+      "Resend OTP Error:",
+      error
+    );
 
     return res.status(500).json({
       success: false,
@@ -487,7 +488,7 @@ const forgotPassword = async (req, res) => {
     await sendOTPEmail(
       user.email,
       otp,
-      "StudyGem - Password Reset OTP"
+      user.name
     );
 
     return res.status(200).json({
@@ -555,7 +556,8 @@ const verifyResetOTP = async (req, res) => {
 
     return res.status(200).json({
       success: true,
-      message: "OTP verified successfully",
+      message:
+        "OTP verified successfully",
     });
   } catch (error) {
     console.error(
@@ -600,7 +602,8 @@ const resetPassword = async (req, res) => {
     if (newPassword !== confirmPassword) {
       return res.status(400).json({
         success: false,
-        message: "Passwords do not match",
+        message:
+          "Passwords do not match",
       });
     }
 
@@ -640,10 +643,8 @@ const resetPassword = async (req, res) => {
       });
     }
 
-    user.password = await bcrypt.hash(
-      newPassword,
-      10
-    );
+    user.password =
+      await bcrypt.hash(newPassword, 10);
 
     user.otp = null;
     user.otpExpires = null;
@@ -652,7 +653,8 @@ const resetPassword = async (req, res) => {
 
     return res.status(200).json({
       success: true,
-      message: "Password reset successfully",
+      message:
+        "Password reset successfully",
     });
   } catch (error) {
     console.error(
@@ -680,7 +682,8 @@ const updateProfile = async (req, res) => {
     if (!userId) {
       return res.status(401).json({
         success: false,
-        message: "Authentication required.",
+        message:
+          "Authentication required.",
       });
     }
 
@@ -712,14 +715,17 @@ const updateProfile = async (req, res) => {
 
     return res.status(200).json({
       success: true,
-      message: "Profile updated successfully.",
+      message:
+        "Profile updated successfully.",
+
       user: {
         id: user._id,
         name: user.name,
         email: user.email,
         role: user.role,
         isVerified: user.isVerified,
-        profileImage: user.profileImage || "",
+        profileImage:
+          user.profileImage || "",
       },
     });
   } catch (error) {
@@ -754,7 +760,8 @@ const getAdminStats = async (req, res) => {
     if (!token) {
       return res.status(401).json({
         success: false,
-        message: "Authentication required.",
+        message:
+          "Authentication required.",
       });
     }
 
@@ -874,6 +881,7 @@ const getAdminStats = async (req, res) => {
 
     return res.status(200).json({
       success: true,
+
       stats: {
         totalUsers,
         verifiedUsers,
