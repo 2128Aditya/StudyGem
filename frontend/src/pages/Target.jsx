@@ -1361,6 +1361,7 @@ function Target({
   onRoadmaps,
   onLeaderboard,
   onPyqs,
+  onNotes,
 }) {
   /* =======================================================
      TARGET
@@ -2087,6 +2088,7 @@ function Target({
         onRoadmaps={onRoadmaps}
         onLeaderboard={onLeaderboard}
         onPyqs={onPyqs}
+        onNotes={onNotes}
         activePage="target"
       />
 

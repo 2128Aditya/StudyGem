@@ -167,6 +167,7 @@ function AIAssistant({
   onTarget,
   onPYQ,
   onLeaderboard,
+  onNotes,
 }) {
   const [messages, setMessages] = useState(() => [
     createWelcomeMessage(),
@@ -443,6 +444,7 @@ function AIAssistant({
   onTarget={onTarget}
   onPYQ={onPYQ}
   onLeaderboard={onLeaderboard}
+  onNotes={onNotes}
         activePage="ai"
       />
 

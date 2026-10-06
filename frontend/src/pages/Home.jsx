@@ -9,6 +9,12 @@ import {
   Users,
   UserRound,
   Star,
+  ChevronLeft,
+  ChevronRight,
+  Play,
+  Pause,
+  Music2,
+  Headphones,
 } from "lucide-react";
 
 import Navbar from "../components/Navbar";
@@ -24,6 +30,7 @@ const Home = ({
   onTarget,
   onPYQ,
   onLeaderboard,  
+  onNotes,
 }) => {
   return (
     <div className="w-full min-h-screen bg-[#f8f6ff] overflow-x-hidden">
@@ -40,6 +47,7 @@ const Home = ({
   onTarget={onTarget}
   onPYQ={onPYQ}
   onLeaderboard={onLeaderboard}
+  onNotes={onNotes}
   activePage="home"
 />
 

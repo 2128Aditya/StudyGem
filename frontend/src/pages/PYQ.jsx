@@ -42,6 +42,7 @@ const PYQ = ({
   onTarget,
   onPYQ,
   onLeaderboard,
+  onNotes,
 }) => {
   const [activeCategory, setActiveCategory] = useState("All");
 
@@ -570,6 +571,7 @@ const PYQ = ({
         onTarget={onTarget}
         onPYQ={onPYQ}
         onLeaderboard={onLeaderboard}
+        onNotes={onNotes} 
         activePage="pyq"
       />
 

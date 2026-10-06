@@ -12,6 +12,7 @@ import AIAssistant from "./pages/AIAssistant";
 import Roadmap from "./pages/Roadmaps";
 import Target from "./pages/Target";
 import PYQ from "./pages/PYQ";
+import Notes from "./pages/Notes";
 import Leaderboard from "./pages/Leaderboard";
 import AdminDashboard from "./pages/AdminDashboard";
 
@@ -125,6 +126,14 @@ function App() {
 
   const openPYQ = () => {
     setPage("pyq");
+  };
+
+  // =========================
+  // NOTES / CURRENT AFFAIRS
+  // =========================
+
+  const openNotes = () => {
+    setPage("notes");
   };
 
   // =========================
@@ -363,6 +372,7 @@ function App() {
           onRoadmaps={openRoadmaps}
           onTarget={openTarget}
           onPYQ={openPYQ}
+          onNotes={openNotes}
           onLeaderboard={openLeaderboard}
         />
       )}
@@ -383,6 +393,7 @@ function App() {
           onRoadmaps={openRoadmaps}
           onTarget={openTarget}
           onPYQ={openPYQ}
+          onNotes={openNotes}
           onLeaderboard={openLeaderboard}
         />
       )}
@@ -401,6 +412,7 @@ function App() {
           onRoadmaps={openRoadmaps}
           onTarget={openTarget}
           onPYQ={openPYQ}
+          onNotes={openNotes}
           onLeaderboard={openLeaderboard}
           onStartTest={startMockTest}
         />
@@ -422,6 +434,7 @@ function App() {
           onRoadmaps={openRoadmaps}
           onTarget={openTarget}
           onPYQ={openPYQ}
+          onNotes={openNotes}
           onLeaderboard={openLeaderboard}
           onFinishTest={finishMockTest}
         />
@@ -455,6 +468,7 @@ function App() {
           onRoadmaps={openRoadmaps}
           onTarget={openTarget}
           onPYQ={openPYQ}
+          onNotes={openNotes}
           onLeaderboard={openLeaderboard}
         />
       )}
@@ -473,6 +487,7 @@ function App() {
           onRoadmaps={openRoadmaps}
           onTarget={openTarget}
           onPYQ={openPYQ}
+          onNotes={openNotes}
           onLeaderboard={openLeaderboard}
         />
       )}
@@ -491,6 +506,7 @@ function App() {
           onRoadmaps={openRoadmaps}
           onTarget={openTarget}
           onPYQ={openPYQ}
+          onNotes={openNotes}
           onLeaderboard={openLeaderboard}
         />
       )}
@@ -509,6 +525,26 @@ function App() {
           onRoadmaps={openRoadmaps}
           onTarget={openTarget}
           onPYQ={openPYQ}
+          onNotes={openNotes}
+          onLeaderboard={openLeaderboard}
+        />
+      )}
+
+      {/* =====================================================
+          NOTES / CURRENT AFFAIRS
+      ===================================================== */}
+
+      {page === "notes" && (
+        <Notes
+          onLogout={handleLogout}
+          onHome={openHome}
+          onMockTests={openMockTests}
+          onAI={openAI}
+          onProfile={openProfile}
+          onRoadmaps={openRoadmaps}
+          onTarget={openTarget}
+          onPYQ={openPYQ}
+          onNotes={openNotes}
           onLeaderboard={openLeaderboard}
         />
       )}
@@ -527,6 +563,7 @@ function App() {
           onRoadmaps={openRoadmaps}
           onTarget={openTarget}
           onPYQ={openPYQ}
+          onNotes={openNotes}
           onLeaderboard={openLeaderboard}
         />
       )}

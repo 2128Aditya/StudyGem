@@ -75,6 +75,7 @@ function Profile({
   onTarget,
 
   onPYQ,
+onNotes,
 
 }) {
 
@@ -443,6 +444,8 @@ function Profile({
   onTarget={onTarget}
 
   onPYQ={onPYQ}
+
+onNotes={onNotes}
 
   activePage="profile"
 

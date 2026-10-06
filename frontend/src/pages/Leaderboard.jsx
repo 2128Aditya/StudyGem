@@ -1,108 +1,6 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import Navbar from "../components/Navbar";
-
-const leaderboardData = [
-  {
-    rank: 1,
-    name: "Aadi Singh",
-    username: "@aadi",
-    points: 9850,
-    tests: 48,
-    accuracy: 96,
-    streak: 28,
-    avatar: "/aadi.png",
-  },
-  {
-    rank: 2,
-    name: "Rahul Kumar",
-    username: "@rahul",
-    points: 9420,
-    tests: 45,
-    accuracy: 93,
-    streak: 24,
-    avatar: "/aadi.png",
-  },
-  {
-    rank: 3,
-    name: "Priya Sharma",
-    username: "@priya",
-    points: 9180,
-    tests: 43,
-    accuracy: 91,
-    streak: 21,
-    avatar: "/aadi.png",
-  },
-  {
-    rank: 4,
-    name: "Ankit Verma",
-    username: "@ankit",
-    points: 8740,
-    tests: 41,
-    accuracy: 89,
-    streak: 19,
-    avatar: "/aadi.png",
-  },
-  {
-    rank: 5,
-    name: "Sneha Gupta",
-    username: "@sneha",
-    points: 8420,
-    tests: 39,
-    accuracy: 88,
-    streak: 17,
-    avatar: "/aadi.png",
-  },
-  {
-    rank: 6,
-    name: "Arjun Singh",
-    username: "@arjun",
-    points: 8150,
-    tests: 37,
-    accuracy: 86,
-    streak: 15,
-    avatar: "/aadi.png",
-  },
-  {
-    rank: 7,
-    name: "Neha Yadav",
-    username: "@neha",
-    points: 7920,
-    tests: 35,
-    accuracy: 85,
-    streak: 14,
-    avatar: "/aadi.png",
-  },
-  {
-    rank: 8,
-    name: "Rohit Mishra",
-    username: "@rohit",
-    points: 7640,
-    tests: 34,
-    accuracy: 83,
-    streak: 12,
-    avatar: "/aadi.png",
-  },
-  {
-    rank: 9,
-    name: "Simran Kaur",
-    username: "@simran",
-    points: 7380,
-    tests: 32,
-    accuracy: 82,
-    streak: 11,
-    avatar: "/aadi.png",
-  },
-  {
-    rank: 10,
-    name: "Vivek Singh",
-    username: "@vivek",
-    points: 7140,
-    tests: 30,
-    accuracy: 80,
-    streak: 9,
-    avatar: "/aadi.png",
-  },
-];
+import aadiBg from "../assets/aadi.png";
 
 function Leaderboard({
   onLogout,
@@ -118,332 +16,679 @@ function Leaderboard({
   const [activeFilter, setActiveFilter] = useState("All Time");
   const [search, setSearch] = useState("");
 
-  const filteredUsers = useMemo(() => {
-    return leaderboardData.filter((user) => {
-      const value = search.toLowerCase().trim();
+  const [leaderboardData, setLeaderboardData] = useState([]);
+  const [currentUserRank, setCurrentUserRank] = useState(null);
 
-      if (!value) return true;
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  const API_BASE_URL =
+    import.meta.env.VITE_API_URL || "http://localhost:5000/api";
+
+  useEffect(() => {
+    const fetchLeaderboard = async () => {
+      try {
+        setLoading(true);
+        setError("");
+
+        const token =
+          localStorage.getItem("studyGemToken") ||
+          localStorage.getItem("token") ||
+          localStorage.getItem("authToken");
+
+        if (!token) {
+          throw new Error("Please login first.");
+        }
+
+        let period = "all";
+
+        if (activeFilter === "This Week") {
+          period = "week";
+        }
+
+        if (activeFilter === "This Month") {
+          period = "month";
+        }
+
+        const response = await fetch(
+          `${API_BASE_URL}/leaderboard?period=${period}`,
+          {
+            method: "GET",
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+          }
+        );
+
+        const data = await response.json();
+
+        if (!response.ok || !data.success) {
+          throw new Error(
+            data.message || "Failed to load leaderboard."
+          );
+        }
+
+        const users = Array.isArray(data.leaderboard)
+          ? data.leaderboard
+          : [];
+
+        setLeaderboardData(users);
+        setCurrentUserRank(data.currentUserRank || null);
+      } catch (err) {
+        console.error("Leaderboard Error:", err);
+
+        setError(
+          err.message || "Unable to load leaderboard."
+        );
+
+        setLeaderboardData([]);
+        setCurrentUserRank(null);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchLeaderboard();
+  }, [activeFilter, API_BASE_URL]);
+
+  const filteredUsers = useMemo(() => {
+    const value = search.toLowerCase().trim();
+
+    if (!value) {
+      return leaderboardData;
+    }
+
+    return leaderboardData.filter((user) => {
+      const name = String(user.name || "").toLowerCase();
+      const username = String(user.username || "").toLowerCase();
 
       return (
-        user.name.toLowerCase().includes(value) ||
-        user.username.toLowerCase().includes(value)
+        name.includes(value) ||
+        username.includes(value)
       );
     });
-  }, [search]);
+  }, [search, leaderboardData]);
 
   const topThree = leaderboardData.slice(0, 3);
-  const remainingUsers = filteredUsers.filter((user) => user.rank > 3);
+
+  const remainingUsers = filteredUsers.filter(
+    (user) => Number(user.rank) > 3
+  );
+
+  const currentUser =
+    leaderboardData.find(
+      (user) =>
+        Number(user.rank) === Number(currentUserRank)
+    ) || null;
+
+  const totalLearners = leaderboardData.length;
+
+  const totalTests = leaderboardData.reduce(
+    (total, user) =>
+      total + Number(user.tests || 0),
+    0
+  );
+
+  const totalPoints = leaderboardData.reduce(
+    (total, user) =>
+      total + Number(user.points || 0),
+    0
+  );
+
+  const formatNumber = (value) => {
+    return Number(value || 0).toLocaleString();
+  };
 
   return (
     <div className="leaderboard-page">
-<Navbar
-  onLogout={onLogout}
-  onHome={onHome}
-  onMockTests={onMockTests}
-  onAI={onAI}
-  onProfile={onProfile}
-  onRoadmaps={onRoadmaps}
-  onTarget={onTarget}
-  onPYQ={onPYQ}
-  onLeaderboard={onLeaderboard}
-  activePage="leaderboard"
-/>
-      <main className="leaderboard-main">
-        <section className="leaderboard-hero">
-          <div className="hero-background">
-            <img src="/aadi.png" alt="" />
-          </div>
+      <Navbar
+        onLogout={onLogout}
+        onHome={onHome}
+        onMockTests={onMockTests}
+        onAI={onAI}
+        onProfile={onProfile}
+        onRoadmaps={onRoadmaps}
+        onTarget={onTarget}
+        onPYQ={onPYQ}
+        onLeaderboard={onLeaderboard}
+        activePage="leaderboard"
+      />
 
-          <div className="hero-overlay" />
+      <main
+        className="leaderboard-main"
+        style={{
+          backgroundImage: `url(${aadiBg})`,
+        }}
+      >
+        <div className="page-overlay" />
 
-          <div className="hero-content">
-            <div className="hero-badge">
-              <span>🏆</span>
-              <span>StudyGem Leaderboard</span>
-            </div>
+        <section className="leaderboard-content">
 
-            <h1>
-              Compete.
-              <br />
-              <span>Learn. Rise.</span>
-            </h1>
+          {/* HEADER */}
+          <div className="leaderboard-header">
+            <div className="header-left">
+              <span className="small-label">
+                STUDYGEM · LEARNING COMMUNITY
+              </span>
 
-            <p>
-              See where you stand among the top learners and keep pushing
-              yourself higher.
-            </p>
-
-            <div className="hero-stats">
-              <div className="hero-stat">
-                <strong>10K+</strong>
-                <span>Students</span>
-              </div>
-
-              <div className="hero-divider" />
-
-              <div className="hero-stat">
-                <strong>50K+</strong>
-                <span>Tests Taken</span>
-              </div>
-
-              <div className="hero-divider" />
-
-              <div className="hero-stat">
-                <strong>1M+</strong>
-                <span>Points Earned</span>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <section className="leaderboard-section">
-          <div className="section-header">
-            <div>
-              <div className="section-label">
-                <span />
-                TOP LEARNERS
-              </div>
-
-              <h2>Leaderboard</h2>
+              <h1>Leaderboard</h1>
 
               <p>
-                Your consistency decides your position. Keep learning and
-                climb the rankings.
+                Track your progress, see where you stand,
+                and keep moving higher.
               </p>
             </div>
 
-            <div className="filter-buttons">
-              {["All Time", "This Month", "This Week"].map((filter) => (
-                <button
-                  key={filter}
-                  className={
-                    activeFilter === filter
-                      ? "filter-btn active"
-                      : "filter-btn"
-                  }
-                  onClick={() => setActiveFilter(filter)}
-                >
-                  {filter}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <div className="search-row">
-            <div className="search-box">
-              <span className="search-icon">⌕</span>
-
-              <input
-                type="text"
-                placeholder="Search learner..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-              />
-
-              {search && (
-                <button
-                  className="clear-search"
-                  onClick={() => setSearch("")}
-                >
-                  ×
-                </button>
-              )}
-            </div>
-          </div>
-
-          <div className="podium-wrapper">
-            <div className="podium-card second">
-              <div className="rank-number">2</div>
-
-              <div className="avatar-wrap silver">
-                <img
-                  src={topThree[1]?.avatar || "/aadi.png"}
-                  alt={topThree[1]?.name}
-                />
+            <div className="header-stats">
+              <div className="mini-stat">
+                <strong>{formatNumber(totalLearners)}</strong>
+                <span>Students</span>
               </div>
 
-              <div className="podium-medal">🥈</div>
+              <div className="stat-line" />
 
-              <h3>{topThree[1]?.name}</h3>
-              <span className="username">{topThree[1]?.username}</span>
-
-              <div className="points">
-                {topThree[1]?.points.toLocaleString()}{" "}
-                <small>XP</small>
+              <div className="mini-stat">
+                <strong>{formatNumber(totalTests)}</strong>
+                <span>Tests Taken</span>
               </div>
 
-              <div className="podium-base">
-                <span>2</span>
-              </div>
-            </div>
+              <div className="stat-line" />
 
-            <div className="podium-card first">
-              <div className="crown">👑</div>
-
-              <div className="rank-number">1</div>
-
-              <div className="avatar-wrap gold">
-                <img
-                  src={topThree[0]?.avatar || "/aadi.png"}
-                  alt={topThree[0]?.name}
-                />
-              </div>
-
-              <div className="podium-medal">🥇</div>
-
-              <h3>{topThree[0]?.name}</h3>
-              <span className="username">{topThree[0]?.username}</span>
-
-              <div className="points">
-                {topThree[0]?.points.toLocaleString()}{" "}
-                <small>XP</small>
-              </div>
-
-              <div className="podium-base">
-                <span>1</span>
-              </div>
-            </div>
-
-            <div className="podium-card third">
-              <div className="rank-number">3</div>
-
-              <div className="avatar-wrap bronze">
-                <img
-                  src={topThree[2]?.avatar || "/aadi.png"}
-                  alt={topThree[2]?.name}
-                />
-              </div>
-
-              <div className="podium-medal">🥉</div>
-
-              <h3>{topThree[2]?.name}</h3>
-              <span className="username">{topThree[2]?.username}</span>
-
-              <div className="points">
-                {topThree[2]?.points.toLocaleString()}{" "}
-                <small>XP</small>
-              </div>
-
-              <div className="podium-base">
-                <span>3</span>
+              <div className="mini-stat">
+                <strong>{formatNumber(totalPoints)}</strong>
+                <span>Total Points</span>
               </div>
             </div>
           </div>
 
-          <div className="leaderboard-table-card">
-            <div className="table-heading">
-              <span>Rank</span>
-              <span>Learner</span>
-              <span>Points</span>
-              <span>Tests</span>
-              <span>Accuracy</span>
-              <span>Streak</span>
-            </div>
+          {/* MAIN BOARD */}
+          <section className="board-section">
 
-            <div className="table-body">
-              {remainingUsers.length > 0 ? (
-                remainingUsers.map((user) => (
-                  <div
+            {/* BOARD TOP */}
+            <div className="board-top">
+              <div>
+                <span className="section-kicker">
+                  TOP LEARNERS
+                </span>
+
+                <h2>See who's leading</h2>
+
+                <p>
+                  Consistency, practice and progress shape
+                  your position here.
+                </p>
+              </div>
+
+              <div className="filter-buttons">
+                {[
+                  "All Time",
+                  "This Month",
+                  "This Week",
+                ].map((filter) => (
+                  <button
+                    key={filter}
+                    type="button"
                     className={
-                      user.name === "Aadi Singh"
-                        ? "leader-row current-user"
-                        : "leader-row"
+                      activeFilter === filter
+                        ? "filter-btn active"
+                        : "filter-btn"
                     }
-                    key={user.rank}
+                    onClick={() => setActiveFilter(filter)}
                   >
-                    <div className="rank-cell">
-                      <span>#{user.rank}</span>
-                    </div>
+                    {filter}
+                  </button>
+                ))}
+              </div>
+            </div>
 
-                    <div className="learner-cell">
-                      <div className="small-avatar">
-                        <img
-                          src={user.avatar || "/aadi.png"}
-                          alt={user.name}
-                        />
+            {/* SEARCH */}
+            <div className="search-row">
+              <div className="search-box">
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.8"
+                >
+                  <circle cx="11" cy="11" r="7" />
+                  <path d="m20 20-4-4" />
+                </svg>
+
+                <input
+                  type="text"
+                  placeholder="Search learner..."
+                  value={search}
+                  onChange={(e) =>
+                    setSearch(e.target.value)
+                  }
+                />
+
+                {search && (
+                  <button
+                    type="button"
+                    className="clear-search"
+                    onClick={() => setSearch("")}
+                  >
+                    ×
+                  </button>
+                )}
+              </div>
+            </div>
+
+            {/* LOADING */}
+            {loading && (
+              <div className="state-box">
+                <div className="loader" />
+                <h3>Loading leaderboard</h3>
+                <p>
+                  Real learner rankings load ho rahe hain.
+                </p>
+              </div>
+            )}
+
+            {/* ERROR */}
+            {!loading && error && (
+              <div className="state-box error-box">
+                <div className="state-icon">!</div>
+
+                <h3>Unable to load leaderboard</h3>
+
+                <p>{error}</p>
+              </div>
+            )}
+
+            {/* DATA */}
+            {!loading && !error && (
+              <>
+                {/* PODIUM */}
+                {topThree.length > 0 ? (
+                  <div className="podium">
+
+                    {/* SECOND */}
+                    {topThree[1] && (
+                      <div className="podium-card second">
+                        <span className="position">
+                          02
+                        </span>
+
+                        <div className="avatar silver">
+                          <img
+                            src={
+                              topThree[1].avatar ||
+                              aadiBg
+                            }
+                            alt={
+                              topThree[1].name ||
+                              "Learner"
+                            }
+                          />
+                        </div>
+
+                        <div className="place">
+                          2ND
+                        </div>
+
+                        <h3>
+                          {topThree[1].name ||
+                            "StudyGem Student"}
+                        </h3>
+
+                        <span className="username">
+                          {topThree[1].username || ""}
+                        </span>
+
+                        <div className="podium-points">
+                          {formatNumber(
+                            topThree[1].points
+                          )}
+                          <small> XP</small>
+                        </div>
+
+                        <div className="podium-footer">
+                          SECOND PLACE
+                        </div>
                       </div>
+                    )}
 
+                    {/* FIRST */}
+                    {topThree[0] && (
+                      <div className="podium-card first">
+                        <span className="winner-tag">
+                          #1 LEARNER
+                        </span>
+
+                        <div className="position first-position">
+                          01
+                        </div>
+
+                        <div className="avatar gold">
+                          <img
+                            src={
+                              topThree[0].avatar ||
+                              aadiBg
+                            }
+                            alt={
+                              topThree[0].name ||
+                              "Learner"
+                            }
+                          />
+                        </div>
+
+                        <div className="place">
+                          1ST
+                        </div>
+
+                        <h3>
+                          {topThree[0].name ||
+                            "StudyGem Student"}
+                        </h3>
+
+                        <span className="username">
+                          {topThree[0].username || ""}
+                        </span>
+
+                        <div className="podium-points">
+                          {formatNumber(
+                            topThree[0].points
+                          )}
+                          <small> XP</small>
+                        </div>
+
+                        <div className="podium-footer first-footer">
+                          CURRENT LEADER
+                        </div>
+                      </div>
+                    )}
+
+                    {/* THIRD */}
+                    {topThree[2] && (
+                      <div className="podium-card third">
+                        <span className="position">
+                          03
+                        </span>
+
+                        <div className="avatar bronze">
+                          <img
+                            src={
+                              topThree[2].avatar ||
+                              aadiBg
+                            }
+                            alt={
+                              topThree[2].name ||
+                              "Learner"
+                            }
+                          />
+                        </div>
+
+                        <div className="place">
+                          3RD
+                        </div>
+
+                        <h3>
+                          {topThree[2].name ||
+                            "StudyGem Student"}
+                        </h3>
+
+                        <span className="username">
+                          {topThree[2].username || ""}
+                        </span>
+
+                        <div className="podium-points">
+                          {formatNumber(
+                            topThree[2].points
+                          )}
+                          <small> XP</small>
+                        </div>
+
+                        <div className="podium-footer">
+                          THIRD PLACE
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <div className="state-box">
+                    <div className="state-icon">—</div>
+
+                    <h3>No leaderboard data</h3>
+
+                    <p>
+                      Abhi kisi learner ne test attempt
+                      nahi kiya hai.
+                    </p>
+                  </div>
+                )}
+
+                {/* TABLE */}
+                {topThree.length > 0 && (
+                  <div className="ranking-card">
+
+                    <div className="ranking-card-header">
                       <div>
-                        <strong>{user.name}</strong>
-                        <span>{user.username}</span>
+                        <span>FULL RANKING</span>
+                        <h3>All learners</h3>
                       </div>
 
-                      {user.name === "Aadi Singh" && (
-                        <span className="you-badge">YOU</span>
-                      )}
-                    </div>
-
-                    <div className="points-cell">
-                      {user.points.toLocaleString()}
-                      <small> XP</small>
-                    </div>
-
-                    <div className="tests-cell">{user.tests}</div>
-
-                    <div className="accuracy-cell">
-                      <div className="accuracy-value">
-                        <span>{user.accuracy}%</span>
-                      </div>
-
-                      <div className="progress-track">
-                        <div
-                          className="progress-fill"
-                          style={{
-                            width: `${user.accuracy}%`,
-                          }}
-                        />
+                      <div className="total-result">
+                        {filteredUsers.length} learners
                       </div>
                     </div>
 
-                    <div className="streak-cell">
-                      <span>🔥</span>
-                      {user.streak}
+                    <div className="table-wrapper">
+                      <div className="table-heading">
+                        <span>Rank</span>
+                        <span>Learner</span>
+                        <span>Points</span>
+                        <span>Tests</span>
+                        <span>Accuracy</span>
+                        <span>Streak</span>
+                      </div>
+
+                      <div className="table-body">
+                        {remainingUsers.length > 0 ? (
+                          remainingUsers.map((user) => {
+                            const isCurrentUser =
+                              String(user.userId) ===
+                              String(
+                                currentUser?.userId
+                              );
+
+                            return (
+                              <div
+                                className={
+                                  isCurrentUser
+                                    ? "leader-row current-user"
+                                    : "leader-row"
+                                }
+                                key={
+                                  user.userId ||
+                                  user.rank
+                                }
+                              >
+                                <div className="rank-cell">
+                                  <span>
+                                    #{user.rank}
+                                  </span>
+                                </div>
+
+                                <div className="learner-cell">
+                                  <div className="small-avatar">
+                                    <img
+                                      src={
+                                        user.avatar ||
+                                        aadiBg
+                                      }
+                                      alt={
+                                        user.name ||
+                                        "Learner"
+                                      }
+                                    />
+                                  </div>
+
+                                  <div className="learner-info">
+                                    <strong>
+                                      {user.name ||
+                                        "StudyGem Student"}
+                                    </strong>
+
+                                    <span>
+                                      {user.username ||
+                                        ""}
+                                    </span>
+                                  </div>
+
+                                  {isCurrentUser && (
+                                    <span className="you-badge">
+                                      YOU
+                                    </span>
+                                  )}
+                                </div>
+
+                                <div className="points-cell">
+                                  {formatNumber(
+                                    user.points
+                                  )}
+                                  <small> XP</small>
+                                </div>
+
+                                <div className="tests-cell">
+                                  {Number(
+                                    user.tests || 0
+                                  )}
+                                </div>
+
+                                <div className="accuracy-cell">
+                                  <div className="accuracy-top">
+                                    <span>
+                                      {Number(
+                                        user.accuracy ||
+                                          0
+                                      )}
+                                      %
+                                    </span>
+                                  </div>
+
+                                  <div className="progress-track">
+                                    <div
+                                      className="progress-fill"
+                                      style={{
+                                        width: `${Math.min(
+                                          100,
+                                          Math.max(
+                                            0,
+                                            Number(
+                                              user.accuracy ||
+                                                0
+                                            )
+                                          )
+                                        )}%`,
+                                      }}
+                                    />
+                                  </div>
+                                </div>
+
+                                <div className="streak-cell">
+                                  <span>🔥</span>
+                                  {Number(
+                                    user.streak || 0
+                                  )}
+                                </div>
+                              </div>
+                            );
+                          })
+                        ) : (
+                          <div className="state-box small">
+                            <div className="state-icon">
+                              ⌕
+                            </div>
+
+                            <h3>
+                              {search
+                                ? "No learner found"
+                                : "No learners below top 3"}
+                            </h3>
+
+                            <p>
+                              {search
+                                ? "Try searching with another name or username."
+                                : "Keep attempting tests to appear here."}
+                            </p>
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </div>
-                ))
-              ) : (
-                <div className="empty-state">
-                  <div>🔎</div>
-                  <h3>No learner found</h3>
-                  <p>Try searching with another name or username.</p>
+                )}
+
+                {/* CURRENT USER */}
+                <div className="your-rank-card">
+                  <div className="your-rank-left">
+                    <div className="rank-circle">
+                      #{currentUserRank || "-"}
+                    </div>
+
+                    <div className="your-rank-info">
+                      <span>
+                        YOUR CURRENT RANK
+                      </span>
+
+                      <h3>
+                        {currentUser?.name ||
+                          "No ranking yet"}
+                      </h3>
+
+                      <p>
+                        {currentUser
+                          ? "Keep going — you're doing great!"
+                          : "Attempt a mock test to join the leaderboard."}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="your-rank-stats">
+                    <div>
+                      <strong>
+                        {formatNumber(
+                          currentUser?.points
+                        )}
+                      </strong>
+                      <span>XP Points</span>
+                    </div>
+
+                    <div>
+                      <strong>
+                        {Number(
+                          currentUser?.tests || 0
+                        )}
+                      </strong>
+                      <span>Tests</span>
+                    </div>
+
+                    <div>
+                      <strong>
+                        {Number(
+                          currentUser?.accuracy || 0
+                        )}
+                        %
+                      </strong>
+                      <span>Accuracy</span>
+                    </div>
+
+                    <div>
+                      <strong>
+                        {Number(
+                          currentUser?.streak || 0
+                        )}{" "}
+                        🔥
+                      </strong>
+                      <span>Day Streak</span>
+                    </div>
+                  </div>
                 </div>
-              )}
-            </div>
-          </div>
-
-          <div className="your-rank-card">
-            <div className="your-rank-left">
-              <div className="rank-circle">#1</div>
-
-              <div>
-                <span className="your-label">YOUR CURRENT RANK</span>
-                <h3>Aadi Singh</h3>
-                <p>Keep going — you're doing great!</p>
-              </div>
-            </div>
-
-            <div className="your-rank-stats">
-              <div>
-                <strong>9,850</strong>
-                <span>XP Points</span>
-              </div>
-
-              <div>
-                <strong>48</strong>
-                <span>Tests</span>
-              </div>
-
-              <div>
-                <strong>96%</strong>
-                <span>Accuracy</span>
-              </div>
-
-              <div>
-                <strong>28 🔥</strong>
-                <span>Day Streak</span>
-              </div>
-            </div>
-          </div>
+              </>
+            )}
+          </section>
         </section>
       </main>
 
@@ -453,237 +698,217 @@ function Leaderboard({
         }
 
         .leaderboard-page {
-          min-height: 100vh;
           width: 100%;
-          background: #faf7ff;
-          color: #111827;
+          min-height: 100vh;
+          background: #f8f5fc;
+          color: #17121f;
           overflow-x: hidden;
         }
 
         .leaderboard-main {
-          width: 100%;
-        }
-
-        .leaderboard-hero {
-          min-height: 500px;
           position: relative;
-          overflow: hidden;
-          display: flex;
-          align-items: center;
-          isolation: isolate;
-          background: #17102d;
-        }
-
-        .hero-background {
-          position: absolute;
-          inset: 0;
-          z-index: -2;
-        }
-
-        .hero-background img {
+          min-height: calc(100vh - 70px);
           width: 100%;
-          height: 100%;
-          object-fit: cover;
-          object-position: center;
-          opacity: 0.48;
-          filter: saturate(0.9);
+          background-position: center;
+          background-size: cover;
+          background-repeat: no-repeat;
+          background-attachment: fixed;
+          padding: 55px 0 80px;
         }
 
-        .hero-overlay {
+        .page-overlay {
           position: absolute;
           inset: 0;
-          z-index: -1;
-          background:
-            linear-gradient(
-              90deg,
-              rgba(12, 7, 29, 0.96) 0%,
-              rgba(24, 13, 53, 0.88) 38%,
-              rgba(53, 25, 93, 0.58) 72%,
-              rgba(13, 7, 28, 0.82) 100%
-            );
+          background: rgba(250, 247, 255, 0.42);
+          pointer-events: none;
         }
 
-        .hero-content {
-          width: min(1180px, calc(100% - 48px));
+        .leaderboard-content {
+          position: relative;
+          z-index: 2;
+          width: min(1180px, calc(100% - 40px));
           margin: 0 auto;
-          padding: 75px 0;
-          color: white;
         }
 
-        .hero-badge {
-          display: inline-flex;
-          align-items: center;
-          gap: 9px;
-          padding: 9px 15px;
-          border: 1px solid rgba(255, 255, 255, 0.18);
-          border-radius: 999px;
-          background: rgba(255, 255, 255, 0.09);
-          backdrop-filter: blur(12px);
-          font-size: 13px;
-          font-weight: 600;
-          letter-spacing: 0.3px;
-          margin-bottom: 22px;
-        }
+        /* HEADER */
 
-        .hero-badge span:first-child {
-          font-size: 16px;
-        }
-
-        .hero-content h1 {
-          margin: 0;
-          font-size: clamp(44px, 6vw, 76px);
-          line-height: 0.98;
-          letter-spacing: -3px;
-          font-weight: 800;
-          max-width: 650px;
-        }
-
-        .hero-content h1 span {
-          color: #c4b5fd;
-        }
-
-        .hero-content > p {
-          max-width: 570px;
-          margin: 24px 0 35px;
-          color: rgba(255, 255, 255, 0.78);
-          font-size: 17px;
-          line-height: 1.7;
-        }
-
-        .hero-stats {
-          display: flex;
-          align-items: center;
-          gap: 30px;
-        }
-
-        .hero-stat {
-          display: flex;
-          flex-direction: column;
-          gap: 5px;
-        }
-
-        .hero-stat strong {
-          font-size: 23px;
-          font-weight: 800;
-        }
-
-        .hero-stat span {
-          color: rgba(255, 255, 255, 0.6);
-          font-size: 12px;
-        }
-
-        .hero-divider {
-          height: 38px;
-          width: 1px;
-          background: rgba(255, 255, 255, 0.2);
-        }
-
-        .leaderboard-section {
-          width: min(1180px, calc(100% - 48px));
-          margin: 0 auto;
-          padding: 75px 0 90px;
-        }
-
-        .section-header {
+        .leaderboard-header {
           display: flex;
           justify-content: space-between;
           align-items: flex-end;
-          gap: 30px;
+          gap: 35px;
+          margin-bottom: 28px;
         }
 
-        .section-label {
+        .header-left {
+          max-width: 600px;
+        }
+
+        .small-label {
+          display: block;
+          margin-bottom: 10px;
+          color: #7c3aed;
+          font-size: 9px;
+          font-weight: 600;
+          letter-spacing: 1.8px;
+        }
+
+        .header-left h1 {
+          margin: 0;
+          color: #21182a;
+          font-size: clamp(38px, 5vw, 56px);
+          line-height: 1;
+          font-weight: 500;
+          letter-spacing: -2px;
+        }
+
+        .header-left p {
+          margin: 14px 0 0;
+          color: #706678;
+          font-size: 13px;
+          line-height: 1.7;
+        }
+
+        .header-stats {
           display: flex;
           align-items: center;
-          gap: 8px;
+          padding: 15px 20px;
+          border: 1px solid rgba(124, 58, 237, 0.13);
+          border-radius: 13px;
+          background: rgba(255, 255, 255, 0.66);
+          backdrop-filter: blur(14px);
+          -webkit-backdrop-filter: blur(14px);
+          box-shadow: 0 10px 30px rgba(62, 38, 80, 0.06);
+        }
+
+        .mini-stat {
+          min-width: 82px;
+          display: flex;
+          flex-direction: column;
+          gap: 4px;
+        }
+
+        .mini-stat strong {
+          color: #2b2032;
+          font-size: 17px;
+          font-weight: 500;
+        }
+
+        .mini-stat span {
+          color: #9a90a0;
+          font-size: 8px;
+        }
+
+        .stat-line {
+          width: 1px;
+          height: 32px;
+          margin: 0 16px;
+          background: #e7deed;
+        }
+
+        /* BOARD */
+
+        .board-section {
+          padding: 30px;
+          border: 1px solid rgba(124, 58, 237, 0.13);
+          border-radius: 22px;
+          background: rgba(255, 255, 255, 0.56);
+          backdrop-filter: blur(20px);
+          -webkit-backdrop-filter: blur(20px);
+          box-shadow: 0 20px 60px rgba(56, 35, 74, 0.08);
+        }
+
+        .board-top {
+          display: flex;
+          justify-content: space-between;
+          align-items: flex-end;
+          gap: 25px;
+        }
+
+        .section-kicker {
           color: #7c3aed;
+          font-size: 8px;
+          font-weight: 600;
+          letter-spacing: 1.6px;
+        }
+
+        .board-top h2 {
+          margin: 6px 0 0;
+          color: #21182a;
+          font-size: 26px;
+          font-weight: 500;
+          letter-spacing: -0.6px;
+        }
+
+        .board-top p {
+          margin: 7px 0 0;
+          color: #8c8192;
           font-size: 11px;
-          font-weight: 800;
-          letter-spacing: 1.5px;
-          margin-bottom: 10px;
-        }
-
-        .section-label span {
-          width: 24px;
-          height: 2px;
-          background: #7c3aed;
-          border-radius: 10px;
-        }
-
-        .section-header h2 {
-          margin: 0;
-          font-size: 42px;
-          line-height: 1.1;
-          letter-spacing: -1.5px;
-          color: #111827;
-        }
-
-        .section-header p {
-          margin: 10px 0 0;
-          color: #6b7280;
-          font-size: 14px;
-          line-height: 1.6;
         }
 
         .filter-buttons {
           display: flex;
-          gap: 7px;
-          padding: 5px;
-          background: white;
-          border: 1px solid #e9d5ff;
-          border-radius: 13px;
-          box-shadow: 0 8px 25px rgba(76, 29, 149, 0.06);
+          gap: 4px;
+          padding: 4px;
+          border: 1px solid #e8dff0;
+          border-radius: 10px;
+          background: rgba(255, 255, 255, 0.75);
         }
 
         .filter-btn {
           border: 0;
+          border-radius: 7px;
+          padding: 9px 13px;
           background: transparent;
-          padding: 10px 14px;
-          border-radius: 9px;
-          color: #6b7280;
-          font-size: 12px;
-          font-weight: 700;
+          color: #817686;
+          font-family: inherit;
+          font-size: 10px;
+          font-weight: 500;
           cursor: pointer;
           transition: 0.2s ease;
         }
 
         .filter-btn:hover {
-          color: #5b21b6;
+          color: #6d28d9;
         }
 
         .filter-btn.active {
           background: #7c3aed;
-          color: white;
-          box-shadow: 0 5px 12px rgba(124, 58, 237, 0.25);
+          color: #fff;
+          box-shadow: 0 5px 13px rgba(124, 58, 237, 0.2);
         }
+
+        /* SEARCH */
 
         .search-row {
           display: flex;
           justify-content: flex-end;
-          margin-top: 30px;
+          margin-top: 22px;
         }
 
         .search-box {
-          width: 280px;
-          height: 44px;
+          width: 250px;
+          height: 40px;
           display: flex;
           align-items: center;
-          gap: 9px;
-          padding: 0 13px;
-          background: white;
-          border: 1px solid #e5e7eb;
-          border-radius: 11px;
+          gap: 8px;
+          padding: 0 11px;
+          border: 1px solid #e5dceb;
+          border-radius: 9px;
+          background: rgba(255, 255, 255, 0.78);
           transition: 0.2s ease;
         }
 
         .search-box:focus-within {
           border-color: #a78bfa;
-          box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.08);
+          box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.07);
         }
 
-        .search-icon {
-          color: #9ca3af;
-          font-size: 22px;
-          transform: rotate(-20deg);
+        .search-box svg {
+          width: 15px;
+          height: 15px;
+          color: #9b91a2;
+          flex: 0 0 auto;
         }
 
         .search-box input {
@@ -691,207 +916,341 @@ function Leaderboard({
           border: 0;
           outline: 0;
           background: transparent;
-          color: #111827;
-          font-size: 13px;
+          color: #312638;
+          font-family: inherit;
+          font-size: 11px;
         }
 
         .search-box input::placeholder {
-          color: #9ca3af;
+          color: #aaa1b0;
         }
 
         .clear-search {
+          width: 20px;
+          height: 20px;
           border: 0;
-          background: #f3f4f6;
-          color: #6b7280;
-          width: 22px;
-          height: 22px;
           border-radius: 50%;
+          background: #f0eaf5;
+          color: #766b7e;
           cursor: pointer;
-          line-height: 20px;
+          font-size: 14px;
+          line-height: 18px;
         }
 
-        .podium-wrapper {
-          display: flex;
-          justify-content: center;
-          align-items: flex-end;
-          gap: 22px;
-          margin-top: 55px;
-          min-height: 460px;
+        /* PODIUM */
+
+        .podium {
+          display: grid;
+          grid-template-columns: 1fr 1.08fr 1fr;
+          align-items: end;
+          gap: 14px;
+          margin-top: 24px;
         }
 
         .podium-card {
-          width: 31%;
-          max-width: 310px;
-          min-height: 340px;
           position: relative;
-          padding: 38px 25px 0;
-          text-align: center;
-          background: white;
-          border: 1px solid #ede9fe;
-          border-radius: 22px 22px 0 0;
-          box-shadow: 0 18px 45px rgba(76, 29, 149, 0.09);
+          min-height: 310px;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: flex-start;
+          padding: 31px 20px 0;
+          border: 1px solid rgba(124, 58, 237, 0.12);
+          border-radius: 16px 16px 8px 8px;
+          background: rgba(255, 255, 255, 0.76);
+          box-shadow: 0 12px 30px rgba(57, 35, 73, 0.06);
         }
 
         .podium-card.first {
-          min-height: 410px;
-          padding-top: 52px;
-          border-color: #ddd6fe;
-          box-shadow: 0 22px 60px rgba(124, 58, 237, 0.16);
+          min-height: 350px;
+          background: rgba(255, 255, 255, 0.86);
+          border-color: rgba(124, 58, 237, 0.2);
+          box-shadow: 0 18px 40px rgba(91, 33, 182, 0.1);
         }
 
-        .podium-card.second {
-          min-height: 365px;
-        }
-
-        .podium-card.third {
-          min-height: 335px;
-        }
-
-        .rank-number {
+        .position {
           position: absolute;
-          top: 16px;
-          left: 18px;
-          width: 30px;
-          height: 30px;
-          display: flex;
-          justify-content: center;
-          align-items: center;
-          border-radius: 50%;
-          background: #f5f3ff;
-          color: #6d28d9;
-          font-size: 12px;
-          font-weight: 800;
+          top: 13px;
+          left: 15px;
+          color: #aaa0b0;
+          font-size: 9px;
+          font-weight: 500;
+          letter-spacing: 0.8px;
         }
 
-        .crown {
+        .first-position {
+          color: #7c3aed;
+        }
+
+        .winner-tag {
           position: absolute;
-          top: -30px;
+          top: 12px;
           left: 50%;
           transform: translateX(-50%);
-          font-size: 38px;
-          filter: drop-shadow(0 5px 7px rgba(0, 0, 0, 0.12));
+          padding: 4px 8px;
+          border-radius: 4px;
+          background: #f1e9ff;
+          color: #6d28d9;
+          font-size: 7px;
+          font-weight: 600;
+          letter-spacing: 0.8px;
         }
 
-        .avatar-wrap {
+        .avatar {
+          width: 78px;
+          height: 78px;
+          padding: 4px;
+          border-radius: 50%;
+        }
+
+        .first .avatar {
           width: 92px;
           height: 92px;
-          padding: 4px;
-          margin: 0 auto;
-          border-radius: 50%;
-          background: #e5e7eb;
         }
 
-        .first .avatar-wrap {
-          width: 108px;
-          height: 108px;
-        }
-
-        .avatar-wrap.gold {
-          background: linear-gradient(135deg, #f59e0b, #fbbf24, #f97316);
-          box-shadow: 0 0 0 6px #fef3c7;
-        }
-
-        .avatar-wrap.silver {
-          background: linear-gradient(135deg, #9ca3af, #e5e7eb, #6b7280);
-          box-shadow: 0 0 0 6px #f3f4f6;
-        }
-
-        .avatar-wrap.bronze {
-          background: linear-gradient(135deg, #b45309, #d97706, #92400e);
-          box-shadow: 0 0 0 6px #ffedd5;
-        }
-
-        .avatar-wrap img {
+        .avatar img {
           width: 100%;
           height: 100%;
           display: block;
           border-radius: 50%;
           object-fit: cover;
-          background: #f5f3ff;
+          border: 3px solid #fff;
+          background: #eee8f5;
         }
 
-        .podium-medal {
-          margin-top: 10px;
-          font-size: 22px;
+        .avatar.gold {
+          background: linear-gradient(
+            135deg,
+            #d99a22,
+            #f5d36a,
+            #b77913
+          );
+          box-shadow: 0 0 0 5px #fff5d5;
         }
 
-        .podium-card h3 {
-          margin: 8px 0 2px;
-          color: #111827;
-          font-size: 17px;
-          font-weight: 800;
+        .avatar.silver {
+          background: linear-gradient(
+            135deg,
+            #8e969e,
+            #e1e4e7,
+            #6c747c
+          );
+          box-shadow: 0 0 0 5px #f0f1f3;
         }
 
-        .first h3 {
-          font-size: 20px;
+        .avatar.bronze {
+          background: linear-gradient(
+            135deg,
+            #9e511e,
+            #d99351,
+            #783912
+          );
+          box-shadow: 0 0 0 5px #fae9da;
         }
 
-        .username {
-          color: #9ca3af;
-          font-size: 11px;
-        }
-
-        .points {
+        .place {
           margin-top: 13px;
-          color: #5b21b6;
-          font-size: 21px;
-          font-weight: 800;
+          padding: 4px 9px;
+          border-radius: 4px;
+          background: #f3eff7;
+          color: #796d83;
+          font-size: 7px;
+          font-weight: 600;
+          letter-spacing: 0.8px;
         }
 
-        .points small {
-          font-size: 10px;
-          color: #8b5cf6;
-        }
-
-        .podium-base {
-          height: 44px;
-          margin: 20px -25px 0;
-          display: flex;
-          justify-content: center;
-          align-items: center;
-          background: #f5f3ff;
-          color: #7c3aed;
-          font-size: 16px;
-          font-weight: 800;
-        }
-
-        .first .podium-base {
-          background: #ede9fe;
+        .first .place {
+          background: #f2eaff;
           color: #6d28d9;
         }
 
-        .leaderboard-table-card {
-          margin-top: 45px;
-          background: white;
-          border: 1px solid #e9d5ff;
-          border-radius: 18px;
+        .podium-card h3 {
+          max-width: 190px;
           overflow: hidden;
-          box-shadow: 0 12px 35px rgba(76, 29, 149, 0.06);
+          margin: 10px 0 2px;
+          color: #29202f;
+          font-size: 15px;
+          font-weight: 500;
+          white-space: nowrap;
+          text-overflow: ellipsis;
+        }
+
+        .first h3 {
+          font-size: 18px;
+        }
+
+        .username {
+          color: #a197a7;
+          font-size: 9px;
+        }
+
+        .podium-points {
+          margin-top: 13px;
+          color: #5b21b6;
+          font-size: 19px;
+          font-weight: 600;
+        }
+
+        .podium-points small {
+          color: #a18bbd;
+          font-size: 8px;
+          font-weight: 400;
+        }
+
+        .podium-footer {
+          width: calc(100% + 40px);
+          margin-top: auto;
+          padding: 11px;
+          background: #f5f0fa;
+          color: #887b91;
+          text-align: center;
+          font-size: 7px;
+          font-weight: 600;
+          letter-spacing: 1px;
+        }
+
+        .first-footer {
+          background: #eee5ff;
+          color: #6d28d9;
+        }
+
+        /* STATE */
+
+        .state-box {
+          padding: 65px 20px;
+          text-align: center;
+        }
+
+        .state-box.small {
+          padding: 45px 20px;
+        }
+
+        .state-icon {
+          width: 38px;
+          height: 38px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          margin: 0 auto 11px;
+          border-radius: 50%;
+          background: #f0eafa;
+          color: #7c3aed;
+          font-size: 17px;
+        }
+
+        .state-box h3 {
+          margin: 0 0 5px;
+          color: #33283a;
+          font-size: 15px;
+          font-weight: 500;
+        }
+
+        .state-box p {
+          margin: 0;
+          color: #9a909f;
+          font-size: 10px;
+        }
+
+        .error-box .state-icon {
+          background: #fef2f2;
+          color: #b91c1c;
+        }
+
+        .error-box h3 {
+          color: #991b1b;
+        }
+
+        .loader {
+          width: 28px;
+          height: 28px;
+          margin: 0 auto 14px;
+          border: 2px solid #e6ddf0;
+          border-top-color: #7c3aed;
+          border-radius: 50%;
+          animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+          to {
+            transform: rotate(360deg);
+          }
+        }
+
+        /* RANKING */
+
+        .ranking-card {
+          margin-top: 30px;
+          overflow: hidden;
+          border: 1px solid rgba(124, 58, 237, 0.13);
+          border-radius: 15px;
+          background: rgba(255, 255, 255, 0.78);
+          box-shadow: 0 12px 30px rgba(57, 35, 73, 0.055);
+        }
+
+        .ranking-card-header {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          padding: 20px 22px;
+          border-bottom: 1px solid #eee8f3;
+        }
+
+        .ranking-card-header > div:first-child span {
+          color: #8d8196;
+          font-size: 8px;
+          font-weight: 600;
+          letter-spacing: 1.3px;
+        }
+
+        .ranking-card-header h3 {
+          margin: 4px 0 0;
+          color: #2b2131;
+          font-size: 17px;
+          font-weight: 500;
+        }
+
+        .total-result {
+          padding: 6px 9px;
+          border-radius: 5px;
+          background: #f5effa;
+          color: #81748a;
+          font-size: 8px;
+        }
+
+        .table-wrapper {
+          width: 100%;
+          overflow-x: auto;
         }
 
         .table-heading,
         .leader-row {
           display: grid;
-          grid-template-columns: 80px minmax(230px, 1.5fr) 110px 80px minmax(150px, 1fr) 90px;
+          grid-template-columns:
+            70px
+            minmax(220px, 1.5fr)
+            100px
+            70px
+            minmax(140px, 1fr)
+            80px;
           align-items: center;
           gap: 15px;
-          padding: 0 25px;
+          padding: 0 22px;
         }
 
         .table-heading {
-          min-height: 52px;
-          background: #faf7ff;
-          border-bottom: 1px solid #eee7f8;
-          color: #9ca3af;
-          font-size: 10px;
-          font-weight: 800;
+          min-height: 45px;
+          background: #fbf9fd;
+          border-bottom: 1px solid #eee8f3;
+          color: #9a909f;
+          font-size: 8px;
+          font-weight: 600;
           letter-spacing: 0.8px;
           text-transform: uppercase;
         }
 
         .leader-row {
-          min-height: 78px;
-          border-bottom: 1px solid #f1f1f4;
+          min-height: 70px;
+          border-bottom: 1px solid #f0edf2;
           transition: 0.2s ease;
         }
 
@@ -900,34 +1259,34 @@ function Leaderboard({
         }
 
         .leader-row:hover {
-          background: #fcfaff;
+          background: rgba(250, 247, 255, 0.8);
         }
 
         .leader-row.current-user {
           background: #faf5ff;
-          box-shadow: inset 3px 0 0 #7c3aed;
+          box-shadow: inset 3px 0 #7c3aed;
         }
 
         .rank-cell {
-          color: #6b7280;
-          font-size: 13px;
-          font-weight: 800;
+          color: #807586;
+          font-size: 11px;
+          font-weight: 500;
         }
 
         .learner-cell {
+          min-width: 0;
           display: flex;
           align-items: center;
-          gap: 11px;
-          min-width: 0;
+          gap: 10px;
         }
 
         .small-avatar {
+          width: 37px;
+          height: 37px;
           flex: 0 0 auto;
-          width: 40px;
-          height: 40px;
-          border-radius: 50%;
           overflow: hidden;
-          background: #ede9fe;
+          border-radius: 50%;
+          background: #eee8f5;
         }
 
         .small-avatar img {
@@ -936,71 +1295,75 @@ function Leaderboard({
           object-fit: cover;
         }
 
-        .learner-cell > div:last-of-type {
+        .learner-info {
           min-width: 0;
           display: flex;
           flex-direction: column;
           gap: 2px;
         }
 
-        .learner-cell strong {
-          color: #111827;
-          font-size: 13px;
-          white-space: nowrap;
+        .learner-info strong {
           overflow: hidden;
+          color: #302532;
+          font-size: 11px;
+          font-weight: 500;
+          white-space: nowrap;
           text-overflow: ellipsis;
         }
 
-        .learner-cell span {
-          color: #9ca3af;
-          font-size: 10px;
+        .learner-info span {
+          overflow: hidden;
+          color: #a098a5;
+          font-size: 8px;
+          white-space: nowrap;
+          text-overflow: ellipsis;
         }
 
         .you-badge {
-          margin-left: 4px;
-          padding: 4px 7px;
-          border-radius: 5px;
-          background: #ede9fe;
-          color: #6d28d9 !important;
-          font-size: 8px !important;
-          font-weight: 800;
+          padding: 3px 6px;
+          border-radius: 4px;
+          background: #eee5ff;
+          color: #6d28d9;
+          font-size: 7px;
+          font-weight: 600;
+          letter-spacing: 0.5px;
         }
 
         .points-cell {
           color: #5b21b6;
-          font-size: 13px;
-          font-weight: 800;
+          font-size: 11px;
+          font-weight: 600;
         }
 
         .points-cell small {
-          color: #9ca3af;
-          font-size: 9px;
+          color: #9f8bb4;
+          font-size: 7px;
+          font-weight: 400;
         }
 
         .tests-cell {
-          color: #4b5563;
-          font-size: 13px;
-          font-weight: 700;
+          color: #665c6d;
+          font-size: 11px;
         }
 
         .accuracy-cell {
           display: flex;
           flex-direction: column;
-          gap: 6px;
+          gap: 5px;
         }
 
-        .accuracy-value span {
-          color: #374151;
-          font-size: 12px;
-          font-weight: 700;
+        .accuracy-top span {
+          color: #625869;
+          font-size: 10px;
+          font-weight: 500;
         }
 
         .progress-track {
           width: 100%;
-          height: 5px;
+          height: 4px;
           overflow: hidden;
-          border-radius: 999px;
-          background: #ede9fe;
+          border-radius: 20px;
+          background: #ece4f4;
         }
 
         .progress-fill {
@@ -1012,112 +1375,107 @@ function Leaderboard({
         .streak-cell {
           display: flex;
           align-items: center;
-          gap: 6px;
-          color: #4b5563;
-          font-size: 12px;
-          font-weight: 800;
+          gap: 5px;
+          color: #665c6d;
+          font-size: 10px;
         }
 
-        .empty-state {
-          padding: 70px 20px;
-          text-align: center;
-        }
-
-        .empty-state > div {
-          font-size: 34px;
-          margin-bottom: 10px;
-        }
-
-        .empty-state h3 {
-          margin: 0 0 5px;
-          font-size: 17px;
-        }
-
-        .empty-state p {
-          margin: 0;
-          color: #9ca3af;
-          font-size: 12px;
-        }
+        /* YOUR RANK */
 
         .your-rank-card {
-          margin-top: 22px;
-          padding: 22px 25px;
           display: flex;
-          justify-content: space-between;
           align-items: center;
-          gap: 30px;
-          border: 1px solid #ddd6fe;
-          border-radius: 18px;
-          background: linear-gradient(
-            100deg,
-            #f5f3ff,
-            #ffffff
-          );
+          justify-content: space-between;
+          gap: 25px;
+          margin-top: 18px;
+          padding: 20px 22px;
+          border: 1px solid rgba(124, 58, 237, 0.15);
+          border-radius: 15px;
+          background: rgba(255, 255, 255, 0.7);
         }
 
         .your-rank-left {
           display: flex;
           align-items: center;
-          gap: 15px;
+          gap: 13px;
         }
 
         .rank-circle {
-          width: 58px;
-          height: 58px;
+          width: 52px;
+          height: 52px;
           display: flex;
-          justify-content: center;
           align-items: center;
-          border-radius: 50%;
+          justify-content: center;
+          flex: 0 0 auto;
+          border-radius: 13px;
           background: #7c3aed;
-          color: white;
-          font-size: 15px;
-          font-weight: 800;
-          box-shadow: 0 8px 18px rgba(124, 58, 237, 0.25);
+          color: #fff;
+          font-size: 13px;
+          font-weight: 500;
+          box-shadow: 0 7px 18px rgba(124, 58, 237, 0.18);
         }
 
-        .your-label {
+        .your-rank-info > span {
           color: #7c3aed;
-          font-size: 9px;
-          font-weight: 800;
+          font-size: 7px;
+          font-weight: 600;
           letter-spacing: 1px;
         }
 
-        .your-rank-left h3 {
+        .your-rank-info h3 {
           margin: 3px 0;
-          color: #111827;
-          font-size: 17px;
+          color: #302532;
+          font-size: 15px;
+          font-weight: 500;
         }
 
-        .your-rank-left p {
+        .your-rank-info p {
           margin: 0;
-          color: #9ca3af;
-          font-size: 11px;
+          color: #9a909f;
+          font-size: 9px;
         }
 
         .your-rank-stats {
           display: flex;
           align-items: center;
-          gap: 35px;
+          gap: 27px;
         }
 
         .your-rank-stats > div {
           display: flex;
           flex-direction: column;
-          gap: 4px;
+          gap: 3px;
         }
 
         .your-rank-stats strong {
-          color: #111827;
-          font-size: 16px;
+          color: #302532;
+          font-size: 13px;
+          font-weight: 500;
         }
 
         .your-rank-stats span {
-          color: #9ca3af;
-          font-size: 9px;
+          color: #9c929f;
+          font-size: 7px;
         }
 
+        /* TABLET */
+
         @media (max-width: 900px) {
-          .section-header {
+          .leaderboard-header {
+            align-items: flex-start;
+            flex-direction: column;
+          }
+
+          .header-stats {
+            width: 100%;
+            justify-content: space-around;
+          }
+
+          .mini-stat {
+            text-align: center;
+          }
+
+          .board-top {
             align-items: flex-start;
             flex-direction: column;
           }
@@ -1130,35 +1488,29 @@ function Leaderboard({
             flex: 1;
           }
 
-          .podium-wrapper {
-            gap: 12px;
-          }
-
-          .podium-card {
-            padding-left: 15px;
-            padding-right: 15px;
-          }
-
-          .podium-base {
-            margin-left: -15px;
-            margin-right: -15px;
+          .podium {
+            gap: 10px;
           }
 
           .table-heading,
           .leader-row {
-            grid-template-columns: 55px minmax(180px, 1fr) 95px 70px;
+            grid-template-columns:
+              55px
+              minmax(180px, 1fr)
+              90px
+              70px;
           }
 
           .table-heading span:nth-child(5),
           .table-heading span:nth-child(6),
-          .leader-row > .accuracy-cell,
-          .leader-row > .streak-cell {
+          .leader-row .accuracy-cell,
+          .leader-row .streak-cell {
             display: none;
           }
 
           .your-rank-card {
-            flex-direction: column;
             align-items: flex-start;
+            flex-direction: column;
           }
 
           .your-rank-stats {
@@ -1167,44 +1519,57 @@ function Leaderboard({
           }
         }
 
-        @media (max-width: 650px) {
-          .hero-content,
-          .leaderboard-section {
-            width: min(100% - 28px, 1180px);
+        /* MOBILE */
+
+        @media (max-width: 768px) {
+          .leaderboard-main {
+            padding: 68px 0 55px;
+            background-attachment: scroll;
           }
 
-          .leaderboard-hero {
-            min-height: 540px;
+          .leaderboard-content {
+            width: calc(100% - 24px);
           }
 
-          .hero-content {
-            padding: 55px 0;
+          .leaderboard-header {
+            gap: 20px;
           }
 
-          .hero-content h1 {
-            font-size: 48px;
-            letter-spacing: -2px;
+          .header-left h1 {
+            font-size: 40px;
           }
 
-          .hero-content > p {
+          .header-left p {
+            font-size: 11px;
+          }
+
+          .header-stats {
+            padding: 13px 8px;
+          }
+
+          .mini-stat {
+            min-width: 65px;
+          }
+
+          .mini-stat strong {
             font-size: 14px;
-            max-width: 420px;
           }
 
-          .hero-stats {
-            gap: 17px;
+          .mini-stat span {
+            font-size: 7px;
           }
 
-          .hero-stat strong {
-            font-size: 17px;
+          .stat-line {
+            margin: 0 7px;
           }
 
-          .hero-stat span {
-            font-size: 9px;
+          .board-section {
+            padding: 17px;
+            border-radius: 17px;
           }
 
-          .section-header h2 {
-            font-size: 34px;
+          .board-top h2 {
+            font-size: 22px;
           }
 
           .filter-buttons {
@@ -1212,37 +1577,26 @@ function Leaderboard({
           }
 
           .filter-btn {
-            white-space: nowrap;
             flex: 0 0 auto;
-          }
-
-          .search-row {
-            justify-content: stretch;
+            white-space: nowrap;
           }
 
           .search-box {
             width: 100%;
           }
 
-          .podium-wrapper {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            align-items: end;
-            gap: 10px;
-            min-height: auto;
+          .search-row {
+            justify-content: stretch;
           }
 
-          .podium-card {
-            width: 100%;
-            max-width: none;
-            min-height: 280px !important;
-            padding-top: 35px;
+          .podium {
+            grid-template-columns: 1fr 1fr;
           }
 
           .podium-card.first {
             grid-column: 1 / -1;
             grid-row: 1;
-            min-height: 340px !important;
+            min-height: 325px;
           }
 
           .podium-card.second {
@@ -1255,82 +1609,111 @@ function Leaderboard({
             grid-row: 2;
           }
 
-          .first .avatar-wrap {
-            width: 90px;
-            height: 90px;
+          .podium-card {
+            min-height: 270px;
+            padding-left: 10px;
+            padding-right: 10px;
           }
 
-          .avatar-wrap {
-            width: 72px;
-            height: 72px;
+          .avatar {
+            width: 65px;
+            height: 65px;
+          }
+
+          .first .avatar {
+            width: 80px;
+            height: 80px;
           }
 
           .podium-card h3,
           .first h3 {
+            max-width: 130px;
+            font-size: 13px;
+          }
+
+          .podium-points {
             font-size: 15px;
           }
 
-          .points {
-            font-size: 17px;
+          .podium-footer {
+            width: calc(100% + 20px);
           }
 
-          .leaderboard-table-card {
+          .ranking-card {
+            margin-top: 20px;
+          }
+
+          .ranking-card-header {
+            padding: 16px;
+          }
+
+          .table-wrapper {
             overflow-x: auto;
           }
 
           .table-heading,
           .leader-row {
-            min-width: 580px;
+            min-width: 570px;
           }
 
           .your-rank-card {
-            padding: 18px;
+            padding: 17px;
           }
 
           .your-rank-stats {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 18px;
+            gap: 17px;
           }
         }
 
         @media (max-width: 420px) {
-          .hero-content h1 {
-            font-size: 41px;
+          .header-left h1 {
+            font-size: 35px;
           }
 
-          .hero-stats {
-            flex-wrap: wrap;
+          .header-stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
           }
 
-          .hero-divider {
+          .stat-line {
             display: none;
           }
 
-          .podium-wrapper {
-            gap: 8px;
+          .mini-stat {
+            min-width: 0;
+          }
+
+          .mini-stat strong {
+            font-size: 13px;
+          }
+
+          .podium {
+            gap: 7px;
           }
 
           .podium-card {
-            padding-left: 10px;
-            padding-right: 10px;
+            padding-left: 7px;
+            padding-right: 7px;
           }
 
-          .podium-base {
-            margin-left: -10px;
-            margin-right: -10px;
-          }
-
-          .podium-medal {
-            font-size: 18px;
-          }
-
-          .points {
-            font-size: 15px;
+          .podium-card h3,
+          .first h3 {
+            max-width: 105px;
+            font-size: 11px;
           }
 
           .username {
-            font-size: 9px;
+            font-size: 8px;
+          }
+
+          .podium-points {
+            font-size: 14px;
+          }
+
+          .podium-footer {
+            font-size: 6px;
           }
         }
       `}</style>

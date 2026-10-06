@@ -27,6 +27,7 @@ function Navbar({
   onTarget,
   onPYQ,
   onLeaderboard,
+  onNotes,
   activePage = "home",
 }) {
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -152,7 +153,10 @@ function Navbar({
 
       return;
     }
-
+    if (page === "notes")
+      if (onNotes){
+        onNotes();
+      }
     // OTHER MODULES
     console.log(`${page} page is not connected yet.`);
   };

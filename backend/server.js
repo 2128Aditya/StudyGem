@@ -7,6 +7,7 @@ const express = require("express");
 const cors = require("cors");
 
 const connectDB = require("./config/db");
+
 const authRoutes = require("./routes/authRoutes");
 const mockRoutes = require("./routes/mockRoutes");
 const mockAttemptRoutes = require("./routes/mockAttemptRoutes");
@@ -15,33 +16,90 @@ const aiRoutes = require("./routes/aiRoutes");
 const roadmapRoutes = require("./routes/roadmapRoutes");
 const studyRoutes = require("./routes/studyRoutes");
 const pyqRoutes = require("./routes/pyqRoutes");
+const leaderboardRoutes = require("./routes/leaderboardRoutes");
+
+// Current Affairs
+const currentAffairsRoutes = require("./routes/currentAffairsRoutes");
+
+const {
+  startCurrentAffairsScheduler,
+} = require("./services/currentAffairsScheduler");
+
+// Connect MongoDB
 connectDB();
+
+// Start Current Affairs daily scheduler
+startCurrentAffairsScheduler();
 
 const app = express();
 
+// Middleware
 app.use(cors());
-app.use(express.json({ limit: "10mb" }));
 
+app.use(
+  express.json({
+    limit: "10mb",
+  })
+);
+
+// Existing Routes
 app.use("/api/auth", authRoutes);
+
 app.use("/api/mock", mockRoutes);
+
 app.use(
   "/api/mock",
   mockAttemptRoutes
 );
+
 app.use("/api/ai", aiRoutes);
-app.use("/api/profile", profileRoutes);
-app.use("/api/roadmap", roadmapRoutes);
-app.use("/api/study", studyRoutes);
-app.use("/api/pyq", pyqRoutes);
+
+app.use(
+  "/api/profile",
+  profileRoutes
+);
+
+app.use(
+  "/api/roadmap",
+  roadmapRoutes
+);
+
+app.use(
+  "/api/study",
+  studyRoutes
+);
+
+app.use(
+  "/api/pyq",
+  pyqRoutes
+);
+
+app.use(
+  "/api/leaderboard",
+  leaderboardRoutes
+);
+
+// Current Affairs Routes
+app.use(
+  "/api/current-affairs",
+  currentAffairsRoutes
+);
+
+// Root Route
 app.get("/", (req, res) => {
   res.json({
     success: true,
-    message: "StudyGem Backend is running 🚀",
+    message:
+      "StudyGem Backend is running 🚀",
   });
 });
 
-const PORT = process.env.PORT || 5000;
+// Server
+const PORT =
+  process.env.PORT || 5000;
 
 app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+  console.log(
+    `Server running on port ${PORT}`
+  );
 });

@@ -1,17 +1,17 @@
 # StudyGem
 
-StudyGem ek smart study companion project hai jo students ko better learning, organized study routine aur productivity improve karne me help karta hai. Is project ka main goal hai ki students apni notes, tasks, deadlines aur study progress ko ek hi platform par manage kar sakein.
+StudyGem is a smart study companion project designed to help students improve their learning, maintain a structured study routine, and increase productivity. The main goal of this project is to enable students to manage their notes, tasks, deadlines, and study progress from a single platform.
 
-## Project Ka Objective
+## Project Objective
 
-Aaj ke students ko sirf padhai nahi, balki smart study habits follow karni hoti hai. StudyGem ek such a platform hai jahan learners:
+Today’s students do not only need to study; they also need to build smart study habits. StudyGem is a platform where learners can:
 
-- apne study goals set kar sakte hain
-- daily tasks aur assignments ko track kar sakte hain
-- notes, resources aur important points save kar sakte hain
-- subject-wise progress ko dekh sakte hain
-- revision aur deadlines ko manage kar sakte hain
-- study focus improve karne ke liye productivity tools use kar sakte hain
+- set their study goals
+- track daily tasks and assignments
+- save notes, resources, and important points
+- review subject-wise progress
+- manage revision schedules and deadlines
+- use productivity tools to improve focus and learning efficiency
 
 ## Key Features
 
@@ -19,13 +19,13 @@ Aaj ke students ko sirf padhai nahi, balki smart study habits follow karni hoti 
 - user overview dashboard
 - daily goals
 - upcoming tasks
-- weekly/monthly progress
+- weekly and monthly progress
 
 ### 2. Notes Management
 - subject-wise notes
-- chapter wise study material
-- easy searching and filtering
-- important points highlight karna
+- chapter-wise study material
+- easy search and filtering
+- highlight important points
 
 ### 3. Task Planner
 - daily routine planner
@@ -53,15 +53,15 @@ Aaj ke students ko sirf padhai nahi, balki smart study habits follow karni hoti 
 
 ## Why This Project?
 
-Bohut se students ko ye problems hoti hain:
+Many students face challenges such as:
 
-- study planning nahi hoti
-- notes scattered rehte hain
-- deadlines miss ho jaate hain
-- progress ko measure nahi kar paate
-- motivation low rehti hai
+- lack of proper study planning
+- scattered notes
+- missed deadlines
+- difficulty measuring progress
+- low motivation
 
-StudyGem in sab issues ko solve karne ke liye design kiya gaya hai. Yeh platform learning ko structured, measurable aur motivating banaata hai.
+StudyGem is designed to solve these issues by creating a structured, measurable, and motivating learning experience.
 
 ## Target Users
 
@@ -70,11 +70,11 @@ StudyGem in sab issues ko solve karne ke liye design kiya gaya hai. Yeh platform
 - competitive exam aspirants
 - self-learners
 - coaching institutes
-- teachers / mentors
+- teachers and mentors
 
 ## Tech Stack
 
-Project ko scalable aur modern banane ke liye in technologies ka use kiya ja sakta hai:
+The project can use modern and scalable technologies such as:
 
 - Frontend: React, Next.js, HTML, CSS, JavaScript
 - Backend: Node.js, Express.js, Python (Flask/FastAPI)
@@ -104,26 +104,26 @@ StudyGem/
 
 ## Installation
 
-1. Repository clone karein:
+1. Clone the repository:
 
 ```bash
 git clone https://github.com/your-username/StudyGem.git
 cd StudyGem
 ```
 
-2. Dependencies install karein:
+2. Install dependencies:
 
 ```bash
 npm install
 ```
 
-3. Environment variables configure karein:
+3. Configure environment variables:
 
 ```bash
 cp .env.example .env
 ```
 
-4. App run karein:
+4. Run the application:
 
 ```bash
 npm run dev
@@ -131,19 +131,19 @@ npm run dev
 
 ## Usage
 
-1. Account create karein
-2. Apne subjects aur goals add karein
-3. Daily tasks aur study schedule set karein
-4. Notes aur resources save karein
-5. Focus timer start karein
-6. Progress dashboard se performance check karein
+1. Create an account
+2. Add your subjects and goals
+3. Set daily tasks and study schedules
+4. Save notes and resources
+5. Start the focus timer
+6. Review performance from the progress dashboard
 
 ## Future Scope
 
-StudyGem ko future me aur powerful banana possible hai:
+StudyGem can be expanded into a more powerful platform with:
 
 - AI-based study recommendations
-- smart revision planner
+- smart revision planning
 - quiz generation from notes
 - voice note support
 - collaborative study groups
@@ -172,24 +172,24 @@ StudyGem ko future me aur powerful banana possible hai:
 
 ## Contributing
 
-Agar aap project me contribute karna chahte hain, toh aap steps follow kar sakte hain:
+If you would like to contribute to the project, you can follow these steps:
 
-1. Repository fork karein
-2. New feature branch create karein
-3. Code changes commit karein
-4. Pull request submit karein
+1. Fork the repository
+2. Create a new feature branch
+3. Commit your code changes
+4. Submit a pull request
 
 ## License
 
-Project ke liye suitable open-source license choose kiya jana chahiye. Agar aapko MIT License suitable lagti hai, toh use kar sakte hain.
+A suitable open-source license should be chosen for this project. If MIT License is suitable, it can be used.
 
 ## Contact
 
-Agar aapko project ke baare me koi question ho ya collaboration karna ho, toh maintainers se contact karein.
+If you have any questions about the project or would like to collaborate, please contact the maintainers. aadi21082003@gmail.com
 
 ## Conclusion
 
-StudyGem ek productivity-focused educational platform hai jo students ko better learning habits, organized study routine aur measurable growth provide karta hai. Yeh project aise students ke liye bahut useful hai jo apni padhai ko smarter aur structured way me manage karna chahte hain.
+StudyGem is a productivity-focused educational platform that helps students build better learning habits, maintain a structured study routine, and achieve measurable growth. It is especially useful for students who want to manage their learning in a smarter and more organized way.
 
 ---
 
