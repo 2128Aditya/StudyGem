@@ -97,7 +97,13 @@ const sendOTPEmail = async (
 
 const signup = async (req, res) => {
   try {
-    const { name, email, password, confirmPassword, role } = req.body;
+    const {
+      name,
+      email,
+      password,
+      confirmPassword,
+      role,
+    } = req.body;
 
     if (!name || !email || !password || !confirmPassword) {
       return res.status(400).json({
@@ -133,9 +139,14 @@ const signup = async (req, res) => {
 
     const otp = generateOTP();
 
-    const otpExpires = new Date(Date.now() + 10 * 60 * 1000);
+    const otpExpires = new Date(
+      Date.now() + 10 * 60 * 1000
+    );
 
-    const hashedPassword = await bcrypt.hash(password, 10);
+    const hashedPassword = await bcrypt.hash(
+      password,
+      10
+    );
 
     let user;
 
@@ -217,10 +228,14 @@ const verifyOTP = async (req, res) => {
       });
     }
 
-    if (!user.otpExpires || user.otpExpires < new Date()) {
+    if (
+      !user.otpExpires ||
+      user.otpExpires < new Date()
+    ) {
       return res.status(400).json({
         success: false,
-        message: "OTP has expired. Please request a new OTP",
+        message:
+          "OTP has expired. Please request a new OTP",
       });
     }
 
@@ -261,7 +276,8 @@ const verifyOTP = async (req, res) => {
 
     return res.status(500).json({
       success: false,
-      message: "Something went wrong while verifying OTP",
+      message:
+        "Something went wrong while verifying OTP",
       error: error.message,
     });
   }
@@ -301,10 +317,11 @@ const login = async (req, res) => {
       });
     }
 
-    const isPasswordCorrect = await bcrypt.compare(
-      password,
-      user.password
-    );
+    const isPasswordCorrect =
+      await bcrypt.compare(
+        password,
+        user.password
+      );
 
     if (!isPasswordCorrect) {
       return res.status(401).json({
@@ -385,7 +402,9 @@ const resendOTP = async (req, res) => {
 
     const otp = generateOTP();
 
-    const otpExpires = new Date(Date.now() + 10 * 60 * 1000);
+    const otpExpires = new Date(
+      Date.now() + 10 * 60 * 1000
+    );
 
     user.otp = otp;
     user.otpExpires = otpExpires;
@@ -441,7 +460,9 @@ const forgotPassword = async (req, res) => {
 
     const otp = generateOTP();
 
-    const otpExpires = new Date(Date.now() + 10 * 60 * 1000);
+    const otpExpires = new Date(
+      Date.now() + 10 * 60 * 1000
+    );
 
     user.otp = otp;
     user.otpExpires = otpExpires;
@@ -456,10 +477,14 @@ const forgotPassword = async (req, res) => {
 
     return res.status(200).json({
       success: true,
-      message: "Password reset OTP sent successfully",
+      message:
+        "Password reset OTP sent successfully",
     });
   } catch (error) {
-    console.error("Forgot Password Error:", error);
+    console.error(
+      "Forgot Password Error:",
+      error
+    );
 
     return res.status(500).json({
       success: false,
@@ -502,7 +527,10 @@ const verifyResetOTP = async (req, res) => {
       });
     }
 
-    if (!user.otpExpires || user.otpExpires < new Date()) {
+    if (
+      !user.otpExpires ||
+      user.otpExpires < new Date()
+    ) {
       return res.status(400).json({
         success: false,
         message: "OTP has expired",
@@ -514,11 +542,15 @@ const verifyResetOTP = async (req, res) => {
       message: "OTP verified successfully",
     });
   } catch (error) {
-    console.error("Verify Reset OTP Error:", error);
+    console.error(
+      "Verify Reset OTP Error:",
+      error
+    );
 
     return res.status(500).json({
       success: false,
-      message: "Something went wrong while verifying OTP",
+      message:
+        "Something went wrong while verifying OTP",
       error: error.message,
     });
   }
@@ -559,7 +591,8 @@ const resetPassword = async (req, res) => {
     if (newPassword.length < 6) {
       return res.status(400).json({
         success: false,
-        message: "Password must be at least 6 characters",
+        message:
+          "Password must be at least 6 characters",
       });
     }
 
@@ -581,14 +614,20 @@ const resetPassword = async (req, res) => {
       });
     }
 
-    if (!user.otpExpires || user.otpExpires < new Date()) {
+    if (
+      !user.otpExpires ||
+      user.otpExpires < new Date()
+    ) {
       return res.status(400).json({
         success: false,
         message: "OTP has expired",
       });
     }
 
-    user.password = await bcrypt.hash(newPassword, 10);
+    user.password = await bcrypt.hash(
+      newPassword,
+      10
+    );
 
     user.otp = null;
     user.otpExpires = null;
@@ -600,11 +639,15 @@ const resetPassword = async (req, res) => {
       message: "Password reset successfully",
     });
   } catch (error) {
-    console.error("Reset Password Error:", error);
+    console.error(
+      "Reset Password Error:",
+      error
+    );
 
     return res.status(500).json({
       success: false,
-      message: "Something went wrong while resetting password",
+      message:
+        "Something went wrong while resetting password",
       error: error.message,
     });
   }
@@ -664,11 +707,178 @@ const updateProfile = async (req, res) => {
       },
     });
   } catch (error) {
-    console.error("Update Profile Error:", error);
+    console.error(
+      "Update Profile Error:",
+      error
+    );
 
     return res.status(500).json({
       success: false,
-      message: "Something went wrong while updating profile.",
+      message:
+        "Something went wrong while updating profile.",
+      error: error.message,
+    });
+  }
+};
+
+// ==========================================
+// ADMIN USER STATISTICS
+// ==========================================
+
+const getAdminStats = async (req, res) => {
+  try {
+    const authHeader =
+      req.headers.authorization || "";
+
+    const token =
+      authHeader.startsWith("Bearer ")
+        ? authHeader.split(" ")[1]
+        : null;
+
+    if (!token) {
+      return res.status(401).json({
+        success: false,
+        message: "Authentication required.",
+      });
+    }
+
+    let decoded;
+
+    try {
+      decoded = jwt.verify(
+        token,
+        process.env.JWT_SECRET
+      );
+    } catch (error) {
+      return res.status(401).json({
+        success: false,
+        message: "Invalid or expired token.",
+      });
+    }
+
+    if (decoded.role !== "admin") {
+      return res.status(403).json({
+        success: false,
+        message: "Admin access required.",
+      });
+    }
+
+    const now = new Date();
+
+    const sevenDaysAgo =
+      new Date(
+        now.getTime() -
+          7 * 24 * 60 * 60 * 1000
+      );
+
+    const totalUsers =
+      await User.countDocuments({
+        role: "student",
+      });
+
+    const verifiedUsers =
+      await User.countDocuments({
+        role: "student",
+        isVerified: true,
+      });
+
+    const admins =
+      await User.countDocuments({
+        role: "admin",
+      });
+
+    const newUsers7Days =
+      await User.countDocuments({
+        role: "student",
+        createdAt: {
+          $gte: sevenDaysAgo,
+        },
+      });
+
+    const activeUsers =
+      await User.countDocuments({
+        role: "student",
+        updatedAt: {
+          $gte: sevenDaysAgo,
+        },
+      });
+
+    const recentUsers =
+      await User.find({
+        role: "student",
+      })
+        .select(
+          "name email role isVerified createdAt updatedAt"
+        )
+        .sort({
+          createdAt: -1,
+        })
+        .limit(5)
+        .lean();
+
+    const growth = [];
+
+    for (
+      let index = 5;
+      index >= 0;
+      index--
+    ) {
+      const start =
+        new Date(
+          now.getFullYear(),
+          now.getMonth() - index,
+          1
+        );
+
+      const end =
+        new Date(
+          now.getFullYear(),
+          now.getMonth() - index + 1,
+          1
+        );
+
+      const count =
+        await User.countDocuments({
+          role: "student",
+          createdAt: {
+            $gte: start,
+            $lt: end,
+          },
+        });
+
+      growth.push({
+        label: start.toLocaleDateString(
+          "en-IN",
+          {
+            month: "short",
+          }
+        ),
+        users: count,
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      stats: {
+        totalUsers,
+        verifiedUsers,
+        activeUsers,
+        newUsers7Days,
+        admins,
+        growth,
+        recentUsers,
+      },
+    });
+  } catch (error) {
+    console.error(
+      "Admin Stats Error:",
+      error
+    );
+
+    return res.status(500).json({
+      success: false,
+      message:
+        "Unable to load admin statistics.",
       error: error.message,
     });
   }
@@ -687,4 +897,5 @@ module.exports = {
   verifyResetOTP,
   resetPassword,
   updateProfile,
-};  
+  getAdminStats,
+};

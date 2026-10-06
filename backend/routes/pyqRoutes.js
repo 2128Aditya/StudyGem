@@ -11,50 +11,38 @@ const {
 
 const protect = require("../middleware/authMiddleware");
 const adminOnly = require("../middleware/adminMiddleware");
+const upload = require("../middleware/uploadMiddleware");
 
 const router = express.Router();
 
-// ==========================================
 // GET ALL PYQs
-// Student + Admin
-// ==========================================
 router.get("/", getPYQs);
 
-// ==========================================
 // VIEW PDF
-// Student + Admin
-// ==========================================
 router.get("/:id/view", viewPYQ);
 
-// ==========================================
 // DOWNLOAD PDF
-// Student + Admin
-// ==========================================
 router.get("/:id/download", downloadPYQ);
 
-// ==========================================
 // ADMIN UPLOAD
-// ==========================================
 router.post(
   "/upload",
   protect,
   adminOnly,
+  upload.single("file"),
   uploadPYQ
 );
 
-// ==========================================
 // ADMIN UPDATE
-// ==========================================
 router.put(
   "/:id",
   protect,
   adminOnly,
+  upload.single("file"),
   updatePYQ
 );
 
-// ==========================================
 // ADMIN DELETE
-// ==========================================
 router.delete(
   "/:id",
   protect,

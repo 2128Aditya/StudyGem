@@ -10,6 +10,7 @@ const {
   verifyResetOTP,
   resetPassword,
   updateProfile,
+  getAdminStats,
 } = require("../controllers/authController");
 
 const router = express.Router();
@@ -34,6 +35,12 @@ router.post("/verify-reset-otp", verifyResetOTP);
 
 // Forgot password - reset password
 router.post("/reset-password", resetPassword);
+
+// Admin Stats
+router.get(
+  "/admin-stats",
+  getAdminStats
+);
 
 // Update profile
 router.put("/profile", protect, updateProfile);

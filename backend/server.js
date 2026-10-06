@@ -21,6 +21,9 @@ const leaderboardRoutes = require("./routes/leaderboardRoutes");
 // Current Affairs
 const currentAffairsRoutes = require("./routes/currentAffairsRoutes");
 
+const songRoutes = require("./routes/songRoutes");
+const fileUpload = require("express-fileupload");
+
 const {
   startCurrentAffairsScheduler,
 } = require("./services/currentAffairsScheduler");
@@ -84,7 +87,12 @@ app.use(
   "/api/current-affairs",
   currentAffairsRoutes
 );
-
+app.use("/api/songs", songRoutes);
+app.use(
+  fileUpload({
+    useTempFiles: false,
+  })
+);
 // Root Route
 app.get("/", (req, res) => {
   res.json({
