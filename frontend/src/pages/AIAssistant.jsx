@@ -192,7 +192,7 @@ function AIAssistant({
 
   const API_BASE_URL =
     import.meta.env.VITE_API_URL ||
-    "http://localhost:5000/api";
+    "https://studygem-your-knowledge-your-growth.onrender.com/api";
 
   /* =======================================================
      CAN SEND
