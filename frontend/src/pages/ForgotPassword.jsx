@@ -31,7 +31,7 @@ const ForgotPassword = ({ onLogin }) => {
   const [loading, setLoading] = useState(false);
 
   const API_BASE_URL =
-    import.meta.env.VITE_API_URL || "https://studygem-your-knowledge-your-growth.onrender.com/api";
+   "https://studygem-your-knowledge-your-growth.onrender.com/api";
 
   // ==========================================
   // STEP 1 - SEND OTP
