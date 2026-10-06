@@ -58,7 +58,7 @@ const Signup = ({ onLogin }) => {
 
   const API_BASE_URL =
 
-    import.meta.env.VITE_API_URL || "http://localhost:5000/api/auth";
+    import.meta.env.VITE_API_URL || https://studygem-your-knowledge-your-growth.onrender.com/api/auth";
 
   // =========================================================
 
