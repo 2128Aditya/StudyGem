@@ -1053,7 +1053,8 @@ const Home = ({
               <input
 
                 type="text"
-
+                  aria-label="Search StudyGem for subjects, topics, notes, PYQs and mock tests"
+  name="search"
                 placeholder="Search for subjects, topics, notes, PYQs, mock tests..."
 
                 className="
