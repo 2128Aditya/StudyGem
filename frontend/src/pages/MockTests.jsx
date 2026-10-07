@@ -338,7 +338,7 @@ const topics = [
   "Science & Technology",
 ];
 
-const questionCounts = [10, 20, 50, 100];
+const questionCounts = [10, 20, 50 ];
 const difficulties = [
   { id: "easy", label: "Easy", emoji: "☺", tone: "text-emerald-500 bg-emerald-50" },
   { id: "medium", label: "Medium", emoji: "●", tone: "text-amber-500 bg-amber-50" },
