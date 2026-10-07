@@ -31,12 +31,16 @@ const createSafeFileName = (name) => {
 // ======================================================
 
 const getSignedPDFUrl = (publicId) => {
-  return cloudinary.url(publicId, {
-    resource_type: "raw",
-    type: "upload",
-    secure: true,
-    sign_url: true,
-  });
+  return cloudinary.utils.private_download_url(
+    publicId,
+    "pdf",
+    {
+      resource_type: "raw",
+      type: "upload",
+      expires_at:
+        Math.floor(Date.now() / 1000) + 10 * 60,
+    }
+  );
 };
 
 // ======================================================
