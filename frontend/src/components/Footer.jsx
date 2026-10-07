@@ -62,10 +62,10 @@ const Footer = ({
               </div>
 
               <p className="max-w-sm text-sm leading-6 text-white/55">
-                A smarter learning platform built to help students learn
-                efficiently, practice consistently, and prepare with
-                confidence.
-              </p>
+  StudyGem is an online study platform for students with mock tests,
+  previous year questions, current affairs, study roadmaps, and AI
+  learning tools to help you prepare smarter and learn with confidence.
+</p>
 
               {/* Social */}
               <div className="mt-6 flex items-center gap-3">
