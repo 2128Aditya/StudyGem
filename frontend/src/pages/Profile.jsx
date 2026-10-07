@@ -651,7 +651,7 @@ onNotes={onNotes}
 
                     <GraduationCap size={13} />
 
-                    B.Tech CSE (AI)
+                  
 
                   </span>
 
@@ -661,7 +661,7 @@ onNotes={onNotes}
 
                     <Target size={13} />
 
-                    MNC Placement
+                    
 
                   </span>
 
@@ -675,7 +675,7 @@ onNotes={onNotes}
 
                     <CalendarDays size={11} className="mr-1 inline" />
 
-                    Learning since 2023
+                    Learning since 2026
 
                   </span>
 
@@ -685,8 +685,7 @@ onNotes={onNotes}
 
                     <Target size={11} className="mr-1 inline" />
 
-                    Target: MNC Placement
-
+                
                   </span>
 
                 </div>
