@@ -27,6 +27,19 @@ const createSafeFileName = (name) => {
 };
 
 // ======================================================
+// HELPER - SIGNED CLOUDINARY PDF URL
+// ======================================================
+
+const getSignedPDFUrl = (publicId) => {
+  return cloudinary.url(publicId, {
+    resource_type: "raw",
+    type: "upload",
+    secure: true,
+    sign_url: true,
+  });
+};
+
+// ======================================================
 // GET ALL PYQs
 // GET /api/pyq
 // ======================================================
@@ -35,10 +48,7 @@ const getPYQs = async (req, res) => {
   try {
     const pyqs = await Pyq.find()
       .sort({ createdAt: -1 })
-      .populate(
-        "uploadedBy",
-        "name email"
-      );
+      .populate("uploadedBy", "name email");
 
     return res.status(200).json({
       success: true,
@@ -46,10 +56,7 @@ const getPYQs = async (req, res) => {
       pyqs,
     });
   } catch (error) {
-    console.error(
-      "Get PYQs Error:",
-      error
-    );
+    console.error("Get PYQs Error:", error);
 
     return res.status(500).json({
       success: false,
@@ -97,11 +104,8 @@ const uploadPYQ = async (req, res) => {
     // -----------------------------------------------
 
     const isPDF =
-      req.file.mimetype ===
-        "application/pdf" ||
-      req.file.originalname
-        .toLowerCase()
-        .endsWith(".pdf");
+      req.file.mimetype === "application/pdf" ||
+      req.file.originalname.toLowerCase().endsWith(".pdf");
 
     if (!isPDF) {
       return res.status(400).json({
@@ -114,14 +118,12 @@ const uploadPYQ = async (req, res) => {
     // 10 MB LIMIT
     // -----------------------------------------------
 
-    const maxSize =
-      10 * 1024 * 1024;
+    const maxSize = 10 * 1024 * 1024;
 
     if (req.file.size > maxSize) {
       return res.status(400).json({
         success: false,
-        message:
-          "PDF size must be less than 10MB",
+        message: "PDF size must be less than 10MB",
       });
     }
 
@@ -163,61 +165,46 @@ const uploadPYQ = async (req, res) => {
 
     const finalTitle =
       title?.trim() ||
-      req.file.originalname
-        .replace(/\.pdf$/i, "");
+      req.file.originalname.replace(/\.pdf$/i, "");
 
     // -----------------------------------------------
     // CLOUDINARY PUBLIC ID
     // -----------------------------------------------
 
-    const originalName =
-      req.file.originalname
-        .replace(/\.pdf$/i, "")
-        .replace(/[^a-zA-Z0-9-_]/g, "-");
+    const originalName = req.file.originalname
+      .replace(/\.pdf$/i, "")
+      .replace(/[^a-zA-Z0-9-_]/g, "-");
 
-    const publicId =
-      `${Date.now()}-${originalName}`;
+    const publicId = `${Date.now()}-${originalName}`;
 
     // -----------------------------------------------
     // UPLOAD BUFFER TO CLOUDINARY
     // -----------------------------------------------
 
     const uploadToCloudinary = () => {
-      return new Promise(
-        (resolve, reject) => {
-          const uploadStream =
-            cloudinary.uploader.upload_stream(
-              {
-                folder:
-                  "studygem/pyqs",
-
-                public_id:
-                  publicId,
-
-                resource_type:
-                  "raw",
-
-                type: "upload",
-
-                format: "pdf",
-              },
-
-              (error, result) => {
-                if (error) {
-                  reject(error);
-                } else {
-                  resolve(result);
-                }
+      return new Promise((resolve, reject) => {
+        const uploadStream =
+          cloudinary.uploader.upload_stream(
+            {
+              folder: "studygem/pyqs",
+              public_id: publicId,
+              resource_type: "raw",
+              type: "upload",
+              format: "pdf",
+            },
+            (error, result) => {
+              if (error) {
+                reject(error);
+              } else {
+                resolve(result);
               }
-            );
+            }
+          );
 
-          streamifier
-            .createReadStream(
-              req.file.buffer
-            )
-            .pipe(uploadStream);
-        }
-      );
+        streamifier
+          .createReadStream(req.file.buffer)
+          .pipe(uploadStream);
+      });
     };
 
     const cloudinaryResult =
@@ -230,35 +217,25 @@ const uploadPYQ = async (req, res) => {
     const pyq = await Pyq.create({
       title: finalTitle,
 
-      category:
-        category.trim(),
+      category: category.trim(),
 
-      subject:
-        subject.trim(),
+      subject: subject.trim(),
 
-      year:
-        Number(year),
+      year: Number(year),
 
-      classLevel:
-        classLevel.trim(),
+      classLevel: classLevel.trim(),
 
-      fileUrl:
-        cloudinaryResult.secure_url,
+      fileUrl: cloudinaryResult.secure_url,
 
-      filePublicId:
-        cloudinaryResult.public_id,
+      filePublicId: cloudinaryResult.public_id,
 
-      fileName:
-        req.file.originalname,
+      fileName: req.file.originalname,
 
-      fileSize:
-        req.file.size,
+      fileSize: req.file.size,
 
-      mimeType:
-        "application/pdf",
+      mimeType: "application/pdf",
 
-      uploadedBy:
-        req.user.id,
+      uploadedBy: req.user.id,
 
       views: 0,
 
@@ -267,24 +244,16 @@ const uploadPYQ = async (req, res) => {
 
     return res.status(201).json({
       success: true,
-      message:
-        "PYQ uploaded successfully",
-
+      message: "PYQ uploaded successfully",
       pyq,
     });
   } catch (error) {
-    console.error(
-      "Upload PYQ Error:",
-      error
-    );
+    console.error("Upload PYQ Error:", error);
 
     return res.status(500).json({
       success: false,
-      message:
-        "Failed to upload PYQ",
-
-      error:
-        error.message,
+      message: "Failed to upload PYQ",
+      error: error.message,
     });
   }
 };
@@ -296,25 +265,21 @@ const uploadPYQ = async (req, res) => {
 
 const viewPYQ = async (req, res) => {
   try {
-    const { id } =
-      req.params;
+    const { id } = req.params;
 
-    const pyq =
-      await Pyq.findById(id);
+    const pyq = await Pyq.findById(id);
 
     if (!pyq) {
       return res.status(404).json({
         success: false,
-        message:
-          "PYQ not found",
+        message: "PYQ not found",
       });
     }
 
-    if (!pyq.fileUrl) {
+    if (!pyq.filePublicId) {
       return res.status(404).json({
         success: false,
-        message:
-          "PDF file not found",
+        message: "PDF file not found",
       });
     }
 
@@ -322,31 +287,35 @@ const viewPYQ = async (req, res) => {
     // INCREMENT VIEW COUNT
     // -----------------------------------------------
 
-    pyq.views =
-      (pyq.views || 0) + 1;
+    pyq.views = (pyq.views || 0) + 1;
 
     await pyq.save();
 
     // -----------------------------------------------
-    // REDIRECT TO CLOUDINARY PDF
+    // SIGNED CLOUDINARY URL
     // -----------------------------------------------
 
-    return res.redirect(
-      pyq.fileUrl
+    const signedUrl = getSignedPDFUrl(
+      pyq.filePublicId
     );
+
+    console.log(
+      "Opening signed PDF:",
+      pyq.filePublicId
+    );
+
+    // -----------------------------------------------
+    // OPEN PDF
+    // -----------------------------------------------
+
+    return res.redirect(signedUrl);
   } catch (error) {
-    console.error(
-      "View PYQ Error:",
-      error
-    );
+    console.error("View PYQ Error:", error);
 
     return res.status(500).json({
       success: false,
-      message:
-        "Failed to open PDF",
-
-      error:
-        error.message,
+      message: "Failed to open PDF",
+      error: error.message,
     });
   }
 };
@@ -356,30 +325,23 @@ const viewPYQ = async (req, res) => {
 // GET /api/pyq/:id/download
 // ======================================================
 
-const downloadPYQ = async (
-  req,
-  res
-) => {
+const downloadPYQ = async (req, res) => {
   try {
-    const { id } =
-      req.params;
+    const { id } = req.params;
 
-    const pyq =
-      await Pyq.findById(id);
+    const pyq = await Pyq.findById(id);
 
     if (!pyq) {
       return res.status(404).json({
         success: false,
-        message:
-          "PYQ not found",
+        message: "PYQ not found",
       });
     }
 
-    if (!pyq.fileUrl) {
+    if (!pyq.filePublicId) {
       return res.status(404).json({
         success: false,
-        message:
-          "PDF file not found",
+        message: "PDF file not found",
       });
     }
 
@@ -387,8 +349,7 @@ const downloadPYQ = async (
     // INCREMENT DOWNLOAD COUNT
     // -----------------------------------------------
 
-    pyq.downloads =
-      (pyq.downloads || 0) + 1;
+    pyq.downloads = (pyq.downloads || 0) + 1;
 
     await pyq.save();
 
@@ -401,112 +362,113 @@ const downloadPYQ = async (
       pyq.title ||
       "PYQ";
 
-    fileName =
-      createSafeFileName(
-        fileName
-      );
+    fileName = createSafeFileName(fileName);
 
-    fileName =
-      fileName.replace(
-        /\.pdf$/i,
-        ""
-      );
+    fileName = fileName.replace(
+      /\.pdf$/i,
+      ""
+    );
 
-    fileName =
-      `${fileName}.pdf`;
+    fileName = `${fileName}.pdf`;
+
+    // -----------------------------------------------
+    // SIGNED CLOUDINARY URL
+    // -----------------------------------------------
+
+    const signedUrl = getSignedPDFUrl(
+      pyq.filePublicId
+    );
+
+    console.log(
+      "Downloading signed PDF:",
+      pyq.filePublicId
+    );
 
     // -----------------------------------------------
     // FETCH PDF FROM CLOUDINARY
     // -----------------------------------------------
 
-    https.get(
-      pyq.fileUrl,
-      (cloudinaryResponse) => {
-        // -------------------------------------------
-        // CLOUDINARY ERROR
-        // -------------------------------------------
+    https
+      .get(
+        signedUrl,
+        (cloudinaryResponse) => {
+          // -----------------------------------------
+          // CLOUDINARY ERROR
+          // -----------------------------------------
 
-        if (
-          cloudinaryResponse.statusCode !==
-          200
-        ) {
-          console.error(
-            "Cloudinary Status:",
-            cloudinaryResponse.statusCode
-          );
+          if (
+            cloudinaryResponse.statusCode !== 200
+          ) {
+            console.error(
+              "Cloudinary Download Status:",
+              cloudinaryResponse.statusCode
+            );
 
-          if (!res.headersSent) {
-            return res.status(502).json({
-              success: false,
-              message:
-                "Unable to fetch PDF from storage",
-            });
+            if (!res.headersSent) {
+              return res.status(502).json({
+                success: false,
+                message:
+                  "Unable to fetch PDF from Cloudinary",
+              });
+            }
+
+            return res.end();
           }
 
-          return res.end();
-        }
+          // -----------------------------------------
+          // DOWNLOAD HEADERS
+          // -----------------------------------------
 
-        // -------------------------------------------
-        // FORCE DOWNLOAD
-        // -------------------------------------------
-
-        res.setHeader(
-          "Content-Type",
-          "application/pdf"
-        );
-
-        res.setHeader(
-          "Content-Disposition",
-          `attachment; filename="${fileName}"`
-        );
-
-        // -------------------------------------------
-        // CONTENT LENGTH
-        // -------------------------------------------
-
-        if (
-          cloudinaryResponse
-            .headers[
-            "content-length"
-          ]
-        ) {
           res.setHeader(
-            "Content-Length",
-            cloudinaryResponse
-              .headers[
+            "Content-Type",
+            "application/pdf"
+          );
+
+          res.setHeader(
+            "Content-Disposition",
+            `attachment; filename="${fileName}"`
+          );
+
+          // -----------------------------------------
+          // CONTENT LENGTH
+          // -----------------------------------------
+
+          if (
+            cloudinaryResponse.headers[
               "content-length"
             ]
+          ) {
+            res.setHeader(
+              "Content-Length",
+              cloudinaryResponse.headers[
+                "content-length"
+              ]
+            );
+          }
+
+          // -----------------------------------------
+          // CACHE
+          // -----------------------------------------
+
+          res.setHeader(
+            "Cache-Control",
+            "no-cache"
           );
+
+          // -----------------------------------------
+          // STREAM PDF
+          // -----------------------------------------
+
+          cloudinaryResponse.pipe(res);
         }
-
-        // -------------------------------------------
-        // CACHE
-        // -------------------------------------------
-
-        res.setHeader(
-          "Cache-Control",
-          "no-cache"
-        );
-
-        // -------------------------------------------
-        // STREAM PDF
-        // -------------------------------------------
-
-        cloudinaryResponse.pipe(
-          res
-        );
-      }
-    ).on(
-      "error",
-      (error) => {
+      )
+      .on("error", (error) => {
         console.error(
           "PDF Stream Error:",
           error
         );
 
-        if (
-          !res.headersSent
-        ) {
+        if (!res.headersSent) {
           return res.status(500).json({
             success: false,
             message:
@@ -515,8 +477,7 @@ const downloadPYQ = async (
         }
 
         res.end();
-      }
-    );
+      });
   } catch (error) {
     console.error(
       "Download PYQ Error:",
@@ -526,11 +487,8 @@ const downloadPYQ = async (
     if (!res.headersSent) {
       return res.status(500).json({
         success: false,
-        message:
-          "Failed to download PDF",
-
-        error:
-          error.message,
+        message: "Failed to download PDF",
+        error: error.message,
       });
     }
 
@@ -543,13 +501,9 @@ const downloadPYQ = async (
 // PUT /api/pyq/:id
 // ======================================================
 
-const updatePYQ = async (
-  req,
-  res
-) => {
+const updatePYQ = async (req, res) => {
   try {
-    const { id } =
-      req.params;
+    const { id } = req.params;
 
     const {
       title,
@@ -559,14 +513,12 @@ const updatePYQ = async (
       classLevel,
     } = req.body;
 
-    const pyq =
-      await Pyq.findById(id);
+    const pyq = await Pyq.findById(id);
 
     if (!pyq) {
       return res.status(404).json({
         success: false,
-        message:
-          "PYQ not found",
+        message: "PYQ not found",
       });
     }
 
@@ -578,41 +530,35 @@ const updatePYQ = async (
       title !== undefined &&
       title.trim()
     ) {
-      pyq.title =
-        title.trim();
+      pyq.title = title.trim();
     }
 
     if (
       category !== undefined &&
       category.trim()
     ) {
-      pyq.category =
-        category.trim();
+      pyq.category = category.trim();
     }
 
     if (
       subject !== undefined &&
       subject.trim()
     ) {
-      pyq.subject =
-        subject.trim();
+      pyq.subject = subject.trim();
     }
 
     if (
       year !== undefined &&
       year !== ""
     ) {
-      pyq.year =
-        Number(year);
+      pyq.year = Number(year);
     }
 
     if (
-      classLevel !==
-        undefined &&
+      classLevel !== undefined &&
       classLevel.trim()
     ) {
-      pyq.classLevel =
-        classLevel.trim();
+      pyq.classLevel = classLevel.trim();
     }
 
     // -----------------------------------------------
@@ -630,18 +576,14 @@ const updatePYQ = async (
       if (!isPDF) {
         return res.status(400).json({
           success: false,
-          message:
-            "Only PDF files are allowed",
+          message: "Only PDF files are allowed",
         });
       }
 
       const maxSize =
         10 * 1024 * 1024;
 
-      if (
-        req.file.size >
-        maxSize
-      ) {
+      if (req.file.size > maxSize) {
         return res.status(400).json({
           success: false,
           message:
@@ -658,8 +600,7 @@ const updatePYQ = async (
           await cloudinary.uploader.destroy(
             pyq.filePublicId,
             {
-              resource_type:
-                "raw",
+              resource_type: "raw",
             }
           );
         } catch (deleteError) {
@@ -676,10 +617,7 @@ const updatePYQ = async (
 
       const originalName =
         req.file.originalname
-          .replace(
-            /\.pdf$/i,
-            ""
-          )
+          .replace(/\.pdf$/i, "")
           .replace(
             /[^a-zA-Z0-9-_]/g,
             "-"
@@ -717,7 +655,6 @@ const updatePYQ = async (
                     format:
                       "pdf",
                   },
-
                   (
                     error,
                     result
@@ -774,7 +711,6 @@ const updatePYQ = async (
       success: true,
       message:
         "PYQ updated successfully",
-
       pyq,
     });
   } catch (error) {
@@ -787,9 +723,7 @@ const updatePYQ = async (
       success: false,
       message:
         "Failed to update PYQ",
-
-      error:
-        error.message,
+      error: error.message,
     });
   }
 };
@@ -799,13 +733,9 @@ const updatePYQ = async (
 // DELETE /api/pyq/:id
 // ======================================================
 
-const deletePYQ = async (
-  req,
-  res
-) => {
+const deletePYQ = async (req, res) => {
   try {
-    const { id } =
-      req.params;
+    const { id } = req.params;
 
     const pyq =
       await Pyq.findById(id);
@@ -813,8 +743,7 @@ const deletePYQ = async (
     if (!pyq) {
       return res.status(404).json({
         success: false,
-        message:
-          "PYQ not found",
+        message: "PYQ not found",
       });
     }
 
@@ -827,8 +756,7 @@ const deletePYQ = async (
         await cloudinary.uploader.destroy(
           pyq.filePublicId,
           {
-            resource_type:
-              "raw",
+            resource_type: "raw",
           }
         );
       } catch (cloudinaryError) {
@@ -843,9 +771,7 @@ const deletePYQ = async (
     // DELETE FROM DATABASE
     // -----------------------------------------------
 
-    await Pyq.findByIdAndDelete(
-      id
-    );
+    await Pyq.findByIdAndDelete(id);
 
     return res.status(200).json({
       success: true,
@@ -862,9 +788,7 @@ const deletePYQ = async (
       success: false,
       message:
         "Failed to delete PYQ",
-
-      error:
-        error.message,
+      error: error.message,
     });
   }
 };
