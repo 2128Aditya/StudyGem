@@ -1,21 +1,34 @@
 import { useState } from "react";
 
+// =========================
+// PAGES
+// =========================
+
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import ForgotPassword from "./pages/ForgotPassword";
+
 import Home from "./pages/Home";
 import Profile from "./pages/Profile";
+
 import MockTests from "./pages/MockTests";
 import MockTestInterface from "./pages/MockTestInterface";
 import MockTestResult from "./pages/MockTestResult";
+
 import AIAssistant from "./pages/AIAssistant";
 import Roadmap from "./pages/Roadmaps";
 import Target from "./pages/Target";
 import PYQ from "./pages/PYQ";
 import Notes from "./pages/Notes";
 import Leaderboard from "./pages/Leaderboard";
+
 import AdminDashboard from "./pages/AdminDashboard";
+
 import Footer from "./components/Footer";
+
+// =========================
+// APP
+// =========================
 
 function App() {
   // =========================
@@ -158,44 +171,126 @@ function App() {
     try {
       const token = localStorage.getItem("studyGemToken");
 
+      // -----------------------------------------
+      // If user token is missing
+      // -----------------------------------------
+
       if (!token) {
         console.error("StudyGem token not found.");
 
-        setTestResult(resultData);
+        setTestResult({
+          ...resultData,
+          testConfig,
+        });
+
         setPage("mock-result");
 
         return;
       }
 
+      // -----------------------------------------
+      // API BASE URL
+      // -----------------------------------------
+
       const API_BASE_URL =
         import.meta.env.VITE_API_URL ||
-         "https://studygem-your-knowledge-your-growth.onrender.com/api";
+        "https://studygem-your-knowledge-your-growth.onrender.com/api";
+
+      // -----------------------------------------
+      // Questions
+      // -----------------------------------------
+
+      const questions = Array.isArray(resultData?.questions)
+        ? resultData.questions
+        : [];
+
+      // -----------------------------------------
+      // Answers
+      // -----------------------------------------
+
+      const answers =
+        resultData?.answers &&
+        typeof resultData.answers === "object"
+          ? resultData.answers
+          : {};
+
+      // -----------------------------------------
+      // Calculate time taken
+      //
+      // 1 question = 1 minute
+      // -----------------------------------------
+
+      const totalTimeSeconds = questions.length * 60;
+
+      const remainingTime = Number(resultData?.timeLeft) || 0;
+
+      const timeTakenSeconds = Math.max(
+        0,
+        totalTimeSeconds - remainingTime
+      );
+
+      // -----------------------------------------
+      // IMPORTANT
+      //
+      // testConfig App state se aa raha hai.
+      // MockTestInterface ke resultData me
+      // testConfig nahi aa raha tha.
+      // -----------------------------------------
+
+      const payload = {
+        testConfig: testConfig || {},
+        questions,
+        answers,
+        timeTakenSeconds,
+      };
+
+      console.log(
+        "StudyGem: Saving mock test attempt...",
+        payload
+      );
+
+      // -----------------------------------------
+      // SAVE ATTEMPT
+      // POST /api/mock/attempt
+      // -----------------------------------------
 
       const response = await fetch(
         `${API_BASE_URL}/mock/attempt`,
         {
           method: "POST",
+
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
           },
 
-          body: JSON.stringify({
-            testConfig: resultData.testConfig,
-            questions: resultData.questions,
-            answers: resultData.answers,
-            timeTakenSeconds:
-              resultData.timeTakenSeconds || 0,
-          }),
+          body: JSON.stringify(payload),
         }
       );
 
-      const data = await response.json();
+      // -----------------------------------------
+      // Read backend response safely
+      // -----------------------------------------
+
+      let data = {};
+
+      try {
+        data = await response.json();
+      } catch (jsonError) {
+        console.error(
+          "Unable to read mock attempt response:",
+          jsonError
+        );
+      }
+
+      // -----------------------------------------
+      // Check save status
+      // -----------------------------------------
 
       if (!response.ok || !data.success) {
         console.error(
           "Failed to save mock result:",
-          data.message || "Unknown error"
+          data.message || "Unknown server error"
         );
       } else {
         console.log(
@@ -204,7 +299,21 @@ function App() {
         );
       }
 
-      setTestResult(resultData);
+      // -----------------------------------------
+      // Store result for result page
+      //
+      // testConfig ko yahan bhi preserve kar rahe hain
+      // -----------------------------------------
+
+      setTestResult({
+        ...resultData,
+        testConfig,
+      });
+
+      // -----------------------------------------
+      // Open result page
+      // -----------------------------------------
+
       setPage("mock-result");
     } catch (error) {
       console.error(
@@ -212,7 +321,16 @@ function App() {
         error
       );
 
-      setTestResult(resultData);
+      // -----------------------------------------
+      // Even if API fails,
+      // user can still see result page
+      // -----------------------------------------
+
+      setTestResult({
+        ...resultData,
+        testConfig,
+      });
+
       setPage("mock-result");
     }
   };
@@ -240,6 +358,10 @@ function App() {
     setTestResult(null);
     setPage("mock-create");
   };
+
+  // =========================
+  // RENDER
+  // =========================
 
   return (
     <div className="min-h-screen">
