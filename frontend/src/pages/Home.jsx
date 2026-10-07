@@ -979,7 +979,38 @@ const Home = ({
               </span>
 
             </div>
-
+{/* SEO H1 */}
+<h1
+  className="
+    mt-1
+    mb-4
+    max-w-[700px]
+    text-[32px]
+    sm:text-[40px]
+    lg:text-[48px]
+    xl:text-[54px]
+    leading-[1.08]
+    font-semibold
+    tracking-tight
+    text-[#171c3d]
+  "
+>
+  StudyGem – Online Study Platform for Mock Tests, PYQs & AI Learning
+</h1>
+<p
+  className="
+    mb-5
+    max-w-[680px]
+    text-sm
+    sm:text-base
+    leading-6
+    text-[#69738e]
+  "
+>
+  Study smarter with StudyGem. Practice Mock Tests, explore Previous Year
+  Questions (PYQs), stay updated with Current Affairs, follow Study Roadmaps
+  and get instant help from our AI Study Assistant.
+</p>
             {/* SEARCH */}
 
             <div
