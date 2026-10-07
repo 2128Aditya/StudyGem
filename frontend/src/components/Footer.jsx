@@ -46,13 +46,13 @@ const Footer = ({
               <div className="mb-5 flex items-center gap-3">
                 <img
                   src={logo}
-                  alt="StudyGem"
+                  alt="StudyGem online learning platform"
                   className="h-12 w-12 rounded-xl object-contain"
                 />
 
                 <div>
                   <h2 className="text-xl font-semibold tracking-tight">
-                    Study<span className="text-purple-400">Gem</span>
+                      Study<span className="text-purple-400">Gem</span> — Online Study Platform
                   </h2>
 
                   <p className="text-xs text-white/40">
@@ -74,6 +74,7 @@ const Footer = ({
                   href="https://github.com/2128Aditya"
                   target="_blank"
                   rel="noopener noreferrer"
+                  title="StudyGem GitHub"
                   aria-label="GitHub"
                   className="flex h-10 w-10 items-center justify-center rounded-xl border border-white/10 bg-white/[0.04] text-white/65 transition-all duration-300 hover:-translate-y-1 hover:border-purple-500/40 hover:bg-purple-500/10 hover:text-white"
                 >
@@ -95,7 +96,7 @@ const Footer = ({
                 <button
                   type="button"
                   onClick={() => setShowContact(true)}
-                  aria-label="Contact Us"
+                  aria-label="Contact StudyGem support"
                   className="flex h-10 w-10 items-center justify-center rounded-xl border border-white/10 bg-white/[0.04] text-white/65 transition-all duration-300 hover:-translate-y-1 hover:border-purple-500/40 hover:bg-purple-500/10 hover:text-white"
                 >
                   <Mail size={18} strokeWidth={1.7} />
@@ -106,7 +107,7 @@ const Footer = ({
             {/* Platform */}
             <div>
               <h3 className="mb-5 text-sm font-medium text-white">
-                Platform
+                 StudyGem Platform
               </h3>
 
               <ul className="space-y-3">
@@ -114,6 +115,7 @@ const Footer = ({
                   <button
                     type="button"
                     onClick={() => navigate(onHome)}
+                    aria-label="Go to StudyGem home"
                     className="group flex items-center gap-1.5 text-sm text-white/50 transition-colors hover:text-white"
                   >
                     Home
@@ -128,6 +130,7 @@ const Footer = ({
                   <button
                     type="button"
                     onClick={() => navigate(onMockTests)}
+                    aria-label="Open StudyGem mock tests"
                     className="group flex items-center gap-1.5 text-sm text-white/50 transition-colors hover:text-white"
                   >
                     Mock Tests
@@ -142,6 +145,7 @@ const Footer = ({
                   <button
                     type="button"
                     onClick={() => navigate(onPYQ)}
+                    aria-label="Open StudyGem Previous Year Questions"
                     className="group flex items-center gap-1.5 text-sm text-white/50 transition-colors hover:text-white"
                   >
                     PYQ
@@ -156,6 +160,7 @@ const Footer = ({
                   <button
                     type="button"
                     onClick={() => navigate(onRoadmaps)}
+                    aria-label="Open StudyGem study roadmaps"
                     className="group flex items-center gap-1.5 text-sm text-white/50 transition-colors hover:text-white"
                   >
                     Roadmaps
@@ -171,7 +176,7 @@ const Footer = ({
             {/* Resources */}
             <div>
               <h3 className="mb-5 text-sm font-medium text-white">
-                Resources
+                  Study Resources
               </h3>
 
               <ul className="space-y-3">
@@ -179,6 +184,7 @@ const Footer = ({
                   <button
                     type="button"
                     onClick={() => navigate(onNotes)}
+                    aria-label="Open StudyGem current affairs "
                     className="group flex items-center gap-1.5 text-sm text-white/50 transition-colors hover:text-white"
                   >
                     Notes
@@ -207,6 +213,7 @@ const Footer = ({
                   <button
                     type="button"
                     onClick={() => navigate(onLeaderboard)}
+                    aria-label="Open StudyGem leaderboard"
                     className="group flex items-center gap-1.5 text-sm text-white/50 transition-colors hover:text-white"
                   >
                     Leaderboard
@@ -221,6 +228,7 @@ const Footer = ({
                   <button
                     type="button"
                     onClick={() => navigate(onAI)}
+                    aria-label="Open StudyGem AI study assistant"
                     className="group flex items-center gap-1.5 text-sm text-white/50 transition-colors hover:text-white"
                   >
                     AI Assistant
@@ -236,7 +244,7 @@ const Footer = ({
             {/* Support */}
             <div>
               <h3 className="mb-5 text-sm font-medium text-white">
-                Support
+                StudyGem Support
               </h3>
 
               <ul className="space-y-3">
@@ -287,7 +295,7 @@ const Footer = ({
           {/* Bottom */}
           <div className="flex flex-col items-center justify-between gap-4 text-center sm:flex-row sm:text-left">
             <p className="text-xs text-white/35">
-              © {currentYear} StudyGem. All rights reserved.
+               © {currentYear} StudyGem - Online Study Platform. All rights reserved.
             </p>
 
             <p className="flex items-center gap-1.5 text-xs text-white/40">
@@ -338,6 +346,7 @@ const Footer = ({
             <button
               type="button"
               onClick={() => setShowContact(false)}
+               aria-label="Close contact dialog"
               className="absolute right-5 top-5 flex h-9 w-9 items-center justify-center rounded-xl border border-white/10 bg-white/[0.04] text-white/60 transition-all hover:bg-white/10 hover:text-white"
             >
               <X size={18} />
@@ -348,7 +357,7 @@ const Footer = ({
               <div className="mb-5 flex h-14 w-14 items-center justify-center overflow-hidden rounded-2xl border border-purple-500/20 bg-purple-500/10">
                 <img
                   src={logo}
-                  alt="StudyGem"
+                  alt="StudyGem online study platform"
                   className="h-full w-full object-contain"
                 />
               </div>
