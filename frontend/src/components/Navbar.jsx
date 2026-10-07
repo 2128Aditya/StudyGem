@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import {
   Home,
@@ -13,6 +13,7 @@ import {
   LogOut,
   Menu,
   X,
+  Smartphone,
 } from "lucide-react";
 
 import logo from "../assets/logo.png";
@@ -31,6 +32,52 @@ function Navbar({
   activePage = "home",
 }) {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [isInstalledApp, setIsInstalledApp] = useState(false);
+
+  // =========================
+  // CHECK INSTALLED APP / PWA
+  // =========================
+
+  useEffect(() => {
+    const checkInstalledApp = () => {
+      const isStandalone =
+        window.matchMedia("(display-mode: standalone)").matches ||
+        window.navigator.standalone === true;
+
+      const userAgent = navigator.userAgent || "";
+
+      const isAndroidWebView =
+        /Android/i.test(userAgent) && /; wv\)/i.test(userAgent);
+
+      setIsInstalledApp(isStandalone || isAndroidWebView);
+    };
+
+    checkInstalledApp();
+
+    const mediaQuery = window.matchMedia("(display-mode: standalone)");
+
+    const handleChange = () => {
+      checkInstalledApp();
+    };
+
+    if (mediaQuery.addEventListener) {
+      mediaQuery.addEventListener("change", handleChange);
+    } else {
+      mediaQuery.addListener(handleChange);
+    }
+
+    return () => {
+      if (mediaQuery.removeEventListener) {
+        mediaQuery.removeEventListener("change", handleChange);
+      } else {
+        mediaQuery.removeListener(handleChange);
+      }
+    };
+  }, []);
+
+  // =========================
+  // NAV ITEMS
+  // =========================
 
   const navItems = [
     {
@@ -74,6 +121,33 @@ function Navbar({
       page: "target",
     },
   ];
+
+  // =========================
+  // DOWNLOAD APP
+  // =========================
+
+  const handleDownloadApp = () => {
+    const isMobile = /Android|iPhone|iPad|iPod/i.test(
+      navigator.userAgent
+    );
+
+    if (isMobile) {
+      const link = document.createElement("a");
+
+      link.href = "/StudyGem.apk";
+      link.download = "StudyGem.apk";
+
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      return;
+    }
+
+    alert(
+      "📱 StudyGem Android App\n\nPlease open this website on your Android phone to download the APK."
+    );
+  };
 
   // =========================
   // NAVIGATION
@@ -153,11 +227,16 @@ function Navbar({
 
       return;
     }
-    if (page === "notes")
-      if (onNotes){
+
+    // CURRENT AFFAIRS
+    if (page === "notes") {
+      if (onNotes) {
         onNotes();
       }
-    // OTHER MODULES
+
+      return;
+    }
+
     console.log(`${page} page is not connected yet.`);
   };
 
@@ -189,7 +268,7 @@ function Navbar({
             <button
               type="button"
               onClick={() => handleNavigation("home")}
-              className="flex shrink-0 items-center gap-2 border-0 bg-transparent outline-none"
+              className="flex shrink-0 items-center gap-2 border-0 bg-transparent outline-none transition-transform duration-300 hover:scale-[1.02] active:scale-95"
             >
               <img
                 src={logo}
@@ -228,11 +307,14 @@ function Navbar({
                       handleNavigation(item.page)
                     }
                     className={`
-                      flex items-center gap-1.5 rounded-xl px-3 py-2
-                      text-[12px] font-semibold transition-all duration-200
+                      group relative flex items-center gap-1.5 rounded-xl px-3 py-2
+                      text-[12px] font-semibold
+                      transition-all duration-300 ease-out
+                      hover:-translate-y-0.5
+                      active:scale-95
                       ${
                         active
-                          ? "bg-[#f0e9ff] text-[#6425ed]"
+                          ? "bg-[#f0e9ff] text-[#6425ed] shadow-sm"
                           : "text-[#59627c] hover:bg-[#f6f2ff] hover:text-[#6425ed]"
                       }
                     `}
@@ -240,11 +322,10 @@ function Navbar({
                     <Icon
                       size={16}
                       strokeWidth={2}
+                      className="transition-transform duration-300 group-hover:scale-110"
                     />
 
-                    <span>
-                      {item.label}
-                    </span>
+                    <span>{item.label}</span>
                   </button>
                 );
               })}
@@ -253,6 +334,27 @@ function Navbar({
             {/* ================= RIGHT SIDE ================= */}
 
             <div className="hidden items-center gap-2 lg:flex">
+
+              {/* DOWNLOAD APP */}
+
+              {!isInstalledApp && (
+                <button
+                  type="button"
+                  onClick={handleDownloadApp}
+                  title="Download StudyGem Android App"
+                  className="group flex items-center gap-2 rounded-xl border border-[#ded2ff] bg-[#faf8ff] px-3 py-2 text-[12px] font-semibold text-[#6425ed] transition-all duration-300 hover:-translate-y-0.5 hover:bg-[#f0e9ff] hover:shadow-md hover:shadow-purple-100 active:scale-95"
+                >
+                  <Smartphone
+                    size={18}
+                    strokeWidth={2}
+                    className="transition-transform duration-300 group-hover:scale-110"
+                  />
+
+                  <span className="hidden xl:block">
+                    Download App
+                  </span>
+                </button>
+              )}
 
               {/* PROFILE */}
 
@@ -263,7 +365,9 @@ function Navbar({
                 }
                 className={`
                   flex items-center gap-2 rounded-xl border px-3 py-2
-                  transition
+                  transition-all duration-300
+                  hover:-translate-y-0.5
+                  active:scale-95
                   ${
                     activePage === "profile"
                       ? "border-[#ded2ff] bg-[#f0e9ff] text-[#6425ed]"
@@ -286,7 +390,7 @@ function Navbar({
               <button
                 type="button"
                 onClick={handleLogout}
-                className="flex items-center gap-2 rounded-xl bg-gradient-to-r from-[#7630ff] to-[#5420ee] px-3 py-2 text-[12px] font-semibold text-white shadow-md shadow-purple-200 transition hover:opacity-90"
+                className="flex items-center gap-2 rounded-xl bg-gradient-to-r from-[#7630ff] to-[#5420ee] px-3 py-2 text-[12px] font-semibold text-white shadow-md shadow-purple-200 transition-all duration-300 hover:-translate-y-0.5 hover:opacity-90 hover:shadow-lg active:scale-95"
               >
                 <LogOut size={17} />
 
@@ -300,6 +404,19 @@ function Navbar({
 
             <div className="hidden items-center gap-2 sm:flex lg:hidden">
 
+              {/* DOWNLOAD APP */}
+
+              {!isInstalledApp && (
+                <button
+                  type="button"
+                  onClick={handleDownloadApp}
+                  title="Download StudyGem Android App"
+                  className="flex h-10 w-10 items-center justify-center rounded-xl border border-[#ded2ff] bg-[#faf8ff] text-[#6425ed] transition-all duration-300 hover:-translate-y-0.5 hover:bg-[#f0e9ff] active:scale-95"
+                >
+                  <Smartphone size={19} />
+                </button>
+              )}
+
               {/* PROFILE */}
 
               <button
@@ -309,6 +426,9 @@ function Navbar({
                 }
                 className={`
                   flex h-10 w-10 items-center justify-center rounded-xl
+                  transition-all duration-300
+                  hover:-translate-y-0.5
+                  active:scale-95
                   ${
                     activePage === "profile"
                       ? "bg-[#e9ddff] text-[#6425ed]"
@@ -324,7 +444,7 @@ function Navbar({
               <button
                 type="button"
                 onClick={handleLogout}
-                className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-r from-[#7630ff] to-[#5420ee] text-white shadow-md shadow-purple-200"
+                className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-r from-[#7630ff] to-[#5420ee] text-white shadow-md shadow-purple-200 transition-all duration-300 hover:-translate-y-0.5 hover:opacity-90 active:scale-95"
               >
                 <LogOut size={18} />
               </button>
@@ -335,11 +455,10 @@ function Navbar({
             <button
               type="button"
               onClick={() =>
-                setMobileOpen(
-                  (prev) => !prev
-                )
+                setMobileOpen((prev) => !prev)
               }
-              className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#f3edff] text-[#6425ed] sm:hidden"
+              className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#f3edff] text-[#6425ed] transition-all duration-300 hover:bg-[#e9ddff] active:scale-90 sm:hidden"
+              aria-label="Toggle menu"
             >
               {mobileOpen ? (
                 <X size={22} />
@@ -368,29 +487,44 @@ function Navbar({
                       key={item.label}
                       type="button"
                       onClick={() =>
-                        handleNavigation(
-                          item.page
-                        )
+                        handleNavigation(item.page)
                       }
                       className={`
                         flex items-center gap-2 rounded-xl px-3 py-3
                         text-left text-[12px] font-semibold
+                        transition-all duration-300
+                        active:scale-[0.97]
                         ${
                           active
-                            ? "bg-[#f0e9ff] text-[#6425ed]"
-                            : "bg-[#faf9ff] text-[#59627c]"
+                            ? "bg-[#f0e9ff] text-[#6425ed] shadow-sm"
+                            : "bg-[#faf9ff] text-[#59627c] hover:bg-[#f3edff] hover:text-[#6425ed]"
                         }
                       `}
                     >
-                      <Icon size={17} />
+                      <Icon
+                        size={17}
+                        className="transition-transform duration-300"
+                      />
 
-                      <span>
-                        {item.label}
-                      </span>
+                      <span>{item.label}</span>
                     </button>
                   );
                 })}
               </div>
+
+              {/* DOWNLOAD APP */}
+
+              {!isInstalledApp && (
+                <button
+                  type="button"
+                  onClick={handleDownloadApp}
+                  className="mt-3 flex w-full items-center justify-center gap-2 rounded-xl border border-[#ded2ff] bg-[#faf8ff] py-3 text-[12px] font-semibold text-[#6425ed] transition-all duration-300 hover:bg-[#f0e9ff] active:scale-[0.98]"
+                >
+                  <Smartphone size={18} />
+
+                  Download StudyGem App
+                </button>
+              )}
 
               {/* MOBILE PROFILE + LOGOUT */}
 
@@ -401,17 +535,17 @@ function Navbar({
                 <button
                   type="button"
                   onClick={() =>
-                    handleNavigation(
-                      "profile"
-                    )
+                    handleNavigation("profile")
                   }
                   className={`
                     flex items-center justify-center gap-2 rounded-xl
                     border py-3 text-[12px] font-semibold
+                    transition-all duration-300
+                    active:scale-[0.97]
                     ${
                       activePage === "profile"
                         ? "border-[#ded2ff] bg-[#f0e9ff] text-[#6425ed]"
-                        : "border-[#eee8ff] bg-white text-[#59627c]"
+                        : "border-[#eee8ff] bg-white text-[#59627c] hover:bg-[#f3edff]"
                     }
                   `}
                 >
@@ -425,7 +559,7 @@ function Navbar({
                 <button
                   type="button"
                   onClick={handleLogout}
-                  className="flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#7630ff] to-[#5420ee] py-3 text-[12px] font-semibold text-white"
+                  className="flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#7630ff] to-[#5420ee] py-3 text-[12px] font-semibold text-white transition-all duration-300 hover:opacity-90 active:scale-[0.97]"
                 >
                   <LogOut size={18} />
 
