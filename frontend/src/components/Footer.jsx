@@ -303,7 +303,7 @@ const Footer = ({
                 rel="noopener noreferrer"
                 className="font-medium text-purple-400 transition-colors hover:text-purple-300"
               >
-                Aadi
+                Aditya singh
               </a>
 
               <span className="text-white/20">·</span>
@@ -372,7 +372,7 @@ const Footer = ({
                   Name
                 </p>
                 <p className="mt-1 text-sm font-medium text-white">
-                  Aadi
+                  Aditya singh 
                 </p>
               </div>
 
@@ -388,7 +388,7 @@ const Footer = ({
                   </p>
 
                   <p className="mt-1 text-sm font-medium text-white">
-                    Your Phone Number
+                    +91 8052269388
                   </p>
                 </div>
               </div>
@@ -405,7 +405,7 @@ const Footer = ({
                   </p>
 
                   <p className="mt-1 truncate text-sm font-medium text-white">
-                    contact@studygem.com
+                    aadi21082003@gmail.com 
                   </p>
                 </div>
               </div>
