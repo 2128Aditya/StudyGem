@@ -2560,7 +2560,7 @@ const Home = ({
 
                       src={currentSong.thumbnail}
 
-                      alt="Study music"
+                      alt="StudyGem study music and motivational learning playlist"
 
                       className="
 
